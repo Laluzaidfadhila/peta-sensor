@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Peta Sebaran Seismograph InaTEWS & WRSNG</title>
+  <title>Peta Sebaran Sensor Stasiun Geofisika Kelas I Deli Serdang</title>
   
   <!-- CSS Leaflet.js -->
   <link 
@@ -42,15 +42,7 @@
       border: 1px solid #ddd;
     }
 
-    /* Kustomisasi Tampilan Marker / Legend Legend */
-    .legend-box {
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      font-size: 13px;
-      line-height: 1.8;
-    }
+    /* Legend Badge Styles */
     .badge {
       display: inline-block;
       width: 12px;
@@ -60,13 +52,15 @@
     }
     .badge-blue { background-color: #2A81CB; }
     .badge-red { background-color: #CB2B3E; }
+    .badge-green { background-color: #2AAD27; }
+    .badge-gold { background-color: #CACB2B; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h2>Peta Sebaran Seismograph InaTEWS & WRSNG</h2>
-    <p>Gunakan kontrol layer di pojok kanan atas peta untuk memilih/menyaring tampilan stasiun.</p>
+    <h2>Peta Sebaran Stasiun Monitoring BMKG</h2>
+    <p>Gunakan kontrol layer di pojok kanan atas untuk menyaring tampilan jenis sensor.</p>
 
     <!-- Kontainer Peta -->
     <div id="map"></div>
@@ -81,59 +75,67 @@
 
   <script>
     // 1. Inisialisasi Peta (Pusat Sumatra Utara)
-    const map = L.map('map').setView([2.3, 99.2], 7);
+    const map = L.map('map').setView([2.5, 99.2], 7);
 
     // 2. Tile Layer OpenStreetMap
-    const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    // 3. Ikon Marker Kustom (Biru untuk Seismograph, Merah untuk WRSNG)
+    // 3. Ikon Marker Kustom Warna
     const blueIcon = new L.Icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
     const redIcon = new L.Icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
-    // 4. Data Layer Group
+    const greenIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    const goldIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    // 4. Layer Groups
     const seismographGroup = L.layerGroup().addTo(map);
     const wrsngGroup = L.layerGroup().addTo(map);
+    const accelerographGroup = L.layerGroup().addTo(map);
+    const intensitymeterGroup = L.layerGroup().addTo(map);
 
-    // --- DATA 1: Shelter Seismograph InaTEWS (17 Titik) ---
+    // --- DATA 1: Seismograph InaTEWS ---
     const dataSeismograph = [
-      { id: "DDSI",  lat: 1.603648, lng: 101.39128 },
-      { id: "LASI",  lat: 4.457253, lng: 97.970444 },
-      { id: "LDSI",  lat: 2.886174, lng: 98.15713 },
+      { id: "DDSI", lat: 1.603648, lng: 101.39128 },
+      { id: "LASI", lat: 4.457253, lng: 97.970444 },
+      { id: "LDSI", lat: 2.886174, lng: 98.15713 },
       { id: "MUTSI", lat: 2.300000, lng: 98.965000 },
-      { id: "ONSM",  lat: 2.159800, lng: 98.630000 },
-      { id: "PLSM",  lat: 1.057600, lng: 99.775900 },
+      { id: "ONSM", lat: 2.159800, lng: 98.630000 },
+      { id: "PLSM", lat: 1.057600, lng: 99.775900 },
       { id: "PMTSI", lat: 2.522983, lng: 99.261673 },
-      { id: "PSI",   lat: 2.695200, lng: 98.924000 },
-      { id: "PTSM",  lat: 2.011800, lng: 99.166000 },
-      { id: "RLSI",  lat: 2.068600, lng: 99.855300 },
-      { id: "RSSM",  lat: 2.598100, lng: 98.783200 },
-      { id: "SBSI",  lat: 1.398760, lng: 99.430900 },
+      { id: "PSI", lat: 2.695200, lng: 98.924000 },
+      { id: "PTSM", lat: 2.011800, lng: 99.166000 },
+      { id: "RLSI", lat: 2.068600, lng: 99.855300 },
+      { id: "RSSM", lat: 2.598100, lng: 98.783200 },
+      { id: "SBSI", lat: 1.398760, lng: 99.430900 },
       { id: "RSMSI", lat: 2.959140, lng: 98.861100 },
-      { id: "TKSM",  lat: 3.137400, lng: 98.324400 },
-      { id: "TPRI",  lat: 0.919300, lng: 104.520000 },
-      { id: "TRSI",  lat: 2.025560, lng: 98.959500 },
-      { id: "TSI",   lat: 3.501200, lng: 98.564500 }
+      { id: "TKSM", lat: 3.137400, lng: 98.324400 },
+      { id: "TPRI", lat: 0.919300, lng: 104.520000 },
+      { id: "TRSI", lat: 2.025560, lng: 98.959500 },
+      { id: "TSI", lat: 3.501200, lng: 98.564500 }
     ];
 
-    // --- DATA 2: WRSNG (20 Titik Baru) ---
+    // --- DATA 2: WRSNG ---
     const dataWRSNG = [
       { nama: "WRS Kantor Bupati Humbang Hasundutan", lat: 2.250267, lng: 98.7904565 },
       { nama: "WRS Kantor Bupati Samosir", lat: 2.5598552, lng: 98.7223861 },
@@ -157,40 +159,62 @@
       { nama: "WRS Kantor BPBD Simalungun", lat: 2.9614397, lng: 98.842142 }
     ];
 
-    // Plotting Seismograph (Pin Biru)
+    // --- DATA 3: Accelerograph ---
+    const dataAccelerograph = [
+      { id: "AUSN", lat: 3.26, lng: 98.53 },
+      { id: "BUSN", lat: 3.59, lng: 98.51 },
+      { id: "KNSN", lat: 3.60, lng: 98.86 },
+      { id: "KUSN", lat: 3.12, lng: 98.51 },
+      { id: "MEBA", lat: 3.79, lng: 98.71 },
+      { id: "MEBW", lat: 3.54, lng: 98.67 },
+      { id: "MEPA", lat: 2.70, lng: 98.92 },
+      { id: "MESA", lat: 3.62, lng: 98.71 },
+      { id: "PSSN", lat: 1.55, lng: 98.90 },
+      { id: "PTSR", lat: 1.55, lng: 98.90 },
+      { id: "PUSN", lat: 2.95, lng: 99.06 },
+      { id: "SUSN", lat: 1.41, lng: 99.28 }
+    ];
+
+    // --- DATA 4: Intensitymeter ---
+    const dataIntensitymeter = [
+      { id: "NBMUS", lat: 3.54, lng: 98.64 },
+      { id: "NKSUS", lat: 3.62, lng: 98.71 }
+    ];
+
+    // Render Seismograph (Pin Biru)
     dataSeismograph.forEach(item => {
-      const popup = `
-        <div style="font-family: Arial, sans-serif;">
-          <h4 style="margin: 0 0 5px 0; color: #2A81CB;">Seismograph InaTEWS</h4>
-          <b>Kode Stasiun:</b> ${item.id}<br>
-          <b>Lat:</b> ${item.lat}<br>
-          <b>Lng:</b> ${item.lng}
-        </div>
-      `;
       L.marker([item.lat, item.lng], { icon: blueIcon })
-        .bindPopup(popup)
+        .bindPopup(`<b>Seismograph InaTEWS</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
         .addTo(seismographGroup);
     });
 
-    // Plotting WRSNG (Pin Merah)
+    // Render WRSNG (Pin Merah)
     dataWRSNG.forEach(item => {
-      const popup = `
-        <div style="font-family: Arial, sans-serif;">
-          <h4 style="margin: 0 0 5px 0; color: #CB2B3E;">Lokasi WRSNG</h4>
-          <b>Nama:</b> ${item.nama}<br>
-          <b>Lat:</b> ${item.lat}<br>
-          <b>Lng:</b> ${item.lng}
-        </div>
-      `;
       L.marker([item.lat, item.lng], { icon: redIcon })
-        .bindPopup(popup)
+        .bindPopup(`<b>WRSNG</b><br>${item.nama}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
         .addTo(wrsngGroup);
     });
 
-    // 5. Menambahkan Kontrol Layer di Atas Peta
+    // Render Accelerograph (Pin Hijau)
+    dataAccelerograph.forEach(item => {
+      L.marker([item.lat, item.lng], { icon: greenIcon })
+        .bindPopup(`<b>Accelerograph</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
+        .addTo(accelerographGroup);
+    });
+
+    // Render Intensitymeter (Pin Kuning/Emas)
+    dataIntensitymeter.forEach(item => {
+      L.marker([item.lat, item.lng], { icon: goldIcon })
+        .bindPopup(`<b>Intensitymeter</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
+        .addTo(intensitymeterGroup);
+    });
+
+    // 5. Kontrol Layer Peta
     const overlayMaps = {
       '<span class="badge badge-blue"></span> Shelter Seismograph InaTEWS': seismographGroup,
-      '<span class="badge badge-red"></span> Lokasi WRSNG': wrsngGroup
+      '<span class="badge badge-red"></span> Lokasi WRSNG': wrsngGroup,
+      '<span class="badge badge-green"></span> Accelerograph': accelerographGroup,
+      '<span class="badge badge-gold"></span> Intensitymeter': intensitymeterGroup
     };
 
     L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
