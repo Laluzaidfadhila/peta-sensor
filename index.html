@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</title>
+  <title>Peta Sebaran Aloptama BMKG</title>
   
   <!-- CSS Leaflet.js -->
   <link 
@@ -14,11 +14,16 @@
   />
 
   <style>
+    /* Proteksi Seleksi Teks */
     body {
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
       background-color: #f4f6f9;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     .container {
@@ -40,7 +45,7 @@
       margin-bottom: 20px;
     }
 
-    /* --- STYLES CARD RINGKASAN ALOPTAMA --- */
+    /* Styles Card Ringkasan Aloptama */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -57,7 +62,6 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    /* Warna Border Kiri Kategori Card */
     .card-seismo { border-left-color: #2A81CB; }
     .card-wrsng  { border-left-color: #CB2B3E; }
     .card-accel  { border-left-color: #2AAD27; }
@@ -103,10 +107,10 @@
 <body>
 
   <div class="container">
-    <h2>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</h2>
-    <p class="subtitle">Monitoring lokasi dan jumlah ketersediaan alat operasional utama Stasiun Geofisika Kelas I Deli Serdang.</p>
+    <h2>Peta Sebaran Aloptama BMKG</h2>
+    <p class="subtitle">Monitoring lokasi dan jumlah ketersediaan peralatan/sensor operasional BMKG di wilayah kerja.</p>
 
-    <!-- DASBOARD RINGKASAN JUMLAH ALOPTAMA -->
+    <!-- DASHBOARD STATISTIK ALOPTAMA -->
     <div class="summary-grid">
       <div class="card-aloptama card-seismo">
         <div class="card-title">
@@ -117,7 +121,7 @@
 
       <div class="card-aloptama card-wrsng">
         <div class="card-title">
-          <span class="badge badge-red"></span> WRSNG
+          <span class="badge badge-red"></span> Lokasi WRSNG
         </div>
         <div class="card-count" id="count-wrsng">0</div>
       </div>
@@ -286,12 +290,29 @@
     // Layer Control
     const overlayMaps = {
       '<span class="badge badge-blue"></span> Seismograph InaTEWS': seismographGroup,
-      '<span class="badge badge-red"></span> WRSNG': wrsngGroup,
+      '<span class="badge badge-red"></span> Lokasi WRSNG': wrsngGroup,
       '<span class="badge badge-green"></span> Accelerograph': accelerographGroup,
       '<span class="badge badge-gold"></span> Intensitymeter': intensitymeterGroup
     };
 
     L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+
+    // --- FITUR KEAMANAN / ANTI INSPECT ELEMENT ---
+    // 1. Mematikan Klik Kanan
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
+    // 2. Mematikan Shortcut Keyboard Inspect & Save
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u" || e.key === "S" || e.key === "s"))
+      ) {
+        e.preventDefault();
+      }
+    });
   </script>
 
 </body>
