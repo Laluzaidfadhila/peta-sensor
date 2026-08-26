@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peta Lokasi Sensor Stasiun</title>
+  
+  <!-- CSS Leaflet.js -->
+  <link 
+    rel="stylesheet" 
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+    crossorigin=""
+  />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    #map {
+      height: 600px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Peta Sebaran Stasiun Sensor</h2>
+    <p>Klik pada penanda (marker) untuk melihat koordinat detail tiap sensor.</p>
+
+    <!-- Kontainer Peta -->
+    <div id="map"></div>
+  </div>
+
+  <!-- JavaScript Leaflet.js -->
+  <script 
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+    crossorigin="">
+  </script>
+
+  <script>
+    // 1. Inisialisasi Peta (Pusat di wilayah Sumatra Utara, Zoom level 7)
+    const map = L.map('map').setView([2.5, 99.5], 7);
+
+    // 2. Tile Layer OpenStreetMap
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // 3. Data Sensor berdasarkan Lintang (lat), Bujur (lng), dan Kode Sensor
+    const dataSensor = [
+      { id: "DDSI",  lat: 1.603648, lng: 101.39128 },
+      { id: "LASI",  lat: 4.457253, lng: 97.970444 },
+      { id: "LDSI",  lat: 2.886174, lng: 98.15713 },
+      { id: "MUTSI", lat: 2.300000, lng: 98.965000 },
+      { id: "ONSM",  lat: 2.159800, lng: 98.630000 },
+      { id: "PLSM",  lat: 1.057600, lng: 99.775900 },
+      { id: "PMTSI", lat: 2.522983, lng: 99.261673 },
+      { id: "PSI",   lat: 2.695200, lng: 98.924000 },
+      { id: "PTSM",  lat: 2.011800, lng: 99.166000 },
+      { id: "RLSI",  lat: 2.068600, lng: 99.855300 },
+      { id: "RSSM",  lat: 2.598100, lng: 98.783200 },
+      { id: "SBSI",  lat: 1.398760, lng: 99.430900 },
+      { id: "RSMSI", lat: 2.959140, lng: 98.861100 },
+      { id: "TKSM",  lat: 3.137400, lng: 98.324400 },
+      { id: "TPRI",  lat: 0.919300, lng: 104.520000 },
+      { id: "TRSI",  lat: 2.025560, lng: 98.959500 },
+      { id: "TSI",   lat: 3.501200, lng: 98.564500 }
+    ];
+
+    // 4. Looping untuk menambahkan Marker dan Popup di tiap titik sensor
+    dataSensor.forEach(sensor => {
+      const popupContent = `
+        <div style="min-width: 140px; font-family: Arial, sans-serif;">
+          <h3 style="margin: 0 0 5px 0; color: #0056b3;">Stasiun ${sensor.id}</h3>
+          <hr style="margin: 6px 0; border: 0; border-top: 1px solid #ccc;">
+          <b>Lintang (Lat):</b> ${sensor.lat}<br>
+          <b>Bujur (Lng):</b> ${sensor.lng}
+        </div>
+      `;
+
+      L.marker([sensor.lat, sensor.lng])
+        .addTo(map)
+        .bindPopup(popupContent);
+    });
+  </script>
+
+</body>
+</html>
