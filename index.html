@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Meta tag viewport agar otomatis merespons layar HP -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</title>
   
   <!-- CSS Leaflet.js -->
@@ -14,10 +15,14 @@
   />
 
   <style>
-    /* Proteksi Seleksi Teks */
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       font-family: Arial, sans-serif;
       background-color: #f4f6f9;
       -webkit-user-select: none;
@@ -30,34 +35,37 @@
       max-width: 1100px;
       margin: 0 auto;
       background: #ffffff;
-      padding: 20px;
+      padding: 15px;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     h2 {
       margin-top: 0;
+      font-size: 20px;
       color: #333;
     }
 
     p.subtitle {
       color: #666;
-      margin-bottom: 20px;
+      font-size: 13px;
+      margin-bottom: 15px;
+      line-height: 1.4;
     }
 
-    /* Styles Card Ringkasan Aloptama */
+    /* Grid Card Statistik Responsif (Otomatis menyesuaikan jumlah kolom) */
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     .card-aloptama {
       background: #fafafa;
       border: 1px solid #e0e0e0;
-      border-left: 5px solid #ccc;
-      padding: 15px;
+      border-left: 4px solid #ccc;
+      padding: 10px 12px;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
@@ -68,17 +76,17 @@
     .card-inten  { border-left-color: #CACB2B; }
 
     .card-title {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: bold;
       color: #555;
       text-transform: uppercase;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
     }
 
     .card-count {
-      font-size: 26px;
+      font-size: 20px;
       font-weight: bold;
       color: #222;
       margin: 0;
@@ -86,21 +94,46 @@
 
     .badge {
       display: inline-block;
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      margin-right: 8px;
+      margin-right: 6px;
+      flex-shrink: 0;
     }
     .badge-blue { background-color: #2A81CB; }
     .badge-red { background-color: #CB2B3E; }
     .badge-green { background-color: #2AAD27; }
     .badge-gold { background-color: #CACB2B; }
 
+    /* Tinggi Peta Otomatis Menyeseuaikan HP */
     #map {
-      height: 600px;
+      height: 65vh; /* Menggunakan 65% tinggi layar HP */
+      min-height: 400px;
       width: 100%;
       border-radius: 8px;
       border: 1px solid #ddd;
+    }
+
+    /* Media Query Khusus Layar HP / Mobile */
+    @media (max-width: 600px) {
+      body {
+        padding: 8px;
+      }
+      .container {
+        padding: 12px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 Kolom rapi di layar HP kecil */
+      }
+      #map {
+        height: 55vh;
+      }
+      .leaflet-control-layers {
+        font-size: 11px;
+      }
     }
   </style>
 </head>
@@ -108,13 +141,13 @@
 
   <div class="container">
     <h2>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</h2>
-    <p class="subtitle">Monitoring lokasi dan jumlah ketersediaan alat operasional utama BMKG di satuan kerja Stasiun Geofisika Kelas I Deli Serdang.</p>
+    <p class="subtitle">Monitoring lokasi dan jumlah ketersediaan alat operasional utama BMKG di wilayah kerja Stasiun Geofisika Kelas I Deli Serdang.</p>
 
     <!-- DASHBOARD STATISTIK ALOPTAMA -->
     <div class="summary-grid">
       <div class="card-aloptama card-seismo">
         <div class="card-title">
-          <span class="badge badge-blue"></span> Seismograph InaTEWS
+          <span class="badge badge-blue"></span> Seismograph
         </div>
         <div class="card-count" id="count-seismo">0</div>
       </div>
@@ -289,21 +322,19 @@
 
     // Layer Control
     const overlayMaps = {
-      '<span class="badge badge-blue"></span> Seismograph InaTEWS': seismographGroup,
+      '<span class="badge badge-blue"></span> Seismograph': seismographGroup,
       '<span class="badge badge-red"></span> WRSNG': wrsngGroup,
       '<span class="badge badge-green"></span> Accelerograph': accelerographGroup,
       '<span class="badge badge-gold"></span> Intensitymeter': intensitymeterGroup
     };
 
-    L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+    L.control.layers(null, overlayMaps, { collapsed: true }).addTo(map);
 
     // --- FITUR KEAMANAN / ANTI INSPECT ELEMENT ---
-    // 1. Mematikan Klik Kanan
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
     });
 
-    // 2. Mematikan Shortcut Keyboard Inspect & Save
     document.addEventListener('keydown', function(e) {
       if (
         e.key === "F12" ||
