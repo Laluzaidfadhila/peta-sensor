@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Monitoring Aloptama Stageof Deli Serdang</title>
+  <title>Field Ops Command Center - BMKG Deli Serdang</title>
 
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,7 +21,7 @@
     body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); }
 
     #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
-    .login-box { background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
+    .login-box { background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 0 25px rgba(56, 189, 248, 0.15); }
     .login-box input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: #fff; margin-bottom: 12px; outline: none; }
     .btn-login { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
@@ -73,6 +73,10 @@
     .info-item { margin-bottom: 8px; }
     .info-label { font-weight: 700; color: var(--accent-neon); display: block; margin-bottom: 2px; text-transform: uppercase; font-size: 10px; }
     .off-report-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; }
+
+    /* CSS GALERI FOTO */
+    .doc-gallery { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .doc-img-item { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-color); background: #000; }
 
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
@@ -166,6 +170,12 @@
             <div class="info-item"><span class="info-label">Kegiatan Dilakukan:</span><span id="valActivity">-</span></div>
             <div class="info-item"><span class="info-label">Catatan Pemeliharaan:</span><span id="valNotes">-</span></div>
             <div class="info-item"><span class="info-label">Rekomendasi Lanjutan:</span><span id="valRecs">-</span></div>
+            <!-- WIDGET DOKUMENTASI FOTO -->
+            <div class="info-item">
+              <span class="info-label">Dokumentasi Lapangan:</span>
+              <div id="docGallery" class="doc-gallery"></div>
+              <span id="noImgText" style="color: var(--text-muted); font-style: italic;">Tidak ada berkas foto</span>
+            </div>
           </div>
 
           <div id="offReportSection" class="off-report-box" style="display: none;">
@@ -202,7 +212,8 @@
               <div class="form-group"><label>Kegiatan Pemeliharaan</label><input type="text" id="formActivity" required></div>
               <div class="form-group"><label>Catatan Teknisi</label><textarea id="formNotes" rows="2"></textarea></div>
               <div class="form-group"><label>Rekomendasi</label><textarea id="formRecs" rows="2"></textarea></div>
-              <button type="submit" class="btn-submit"><i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database</button>
+              <div class="form-group"><label>Upload Foto Dokumentasi</label><input type="file" id="formPhoto" accept="image/*" multiple></div>
+              <button type="submit" id="btnSubmitForm" class="btn-submit"><i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database</button>
             </form>
           </details>
 
@@ -302,7 +313,7 @@
       });
     }
 
-    // PEMANGGILAN STORED PROCEDURE DATABASE
+    // SIMPAN BYPASS ALAT MATI
     async function saveBypassOffReport(e) {
       e.preventDefault();
       if (!activeStation) return;
@@ -315,9 +326,33 @@
       loadStationsFromDatabase(); closePanel();
     }
 
+    // SIMPAN MAINTENANCE LOG + UPLOAD FOTO KE SUPABASE STORAGE
     async function saveReportToDatabase(e) {
       e.preventDefault();
       if (!activeStation) return;
+
+      const btnSubmit = document.getElementById('btnSubmitForm');
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Data...';
+
+      let existingPhotos = Array.isArray(activeStation.foto_urls) ? activeStation.foto_urls : [];
+      const fileInput = document.getElementById('formPhoto');
+
+      if (fileInput.files.length > 0) {
+        for (let i = 0; i < fileInput.files.length; i++) {
+          const file = fileInput.files[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${activeStation.id}_${Date.now()}_${i}.${fileExt}`;
+
+          const { error: uploadError } = await supabaseClient.storage.from('dokumentasi').upload(fileName, file, { upsert: true });
+
+          if (!uploadError) {
+            const { data: publicUrlData } = supabaseClient.storage.from('dokumentasi').getPublicUrl(fileName);
+            existingPhotos.push(publicUrlData.publicUrl);
+          }
+        }
+      }
+
       await supabaseClient.rpc('rpc_save_maintenance_log', {
         p_id: activeStation.id,
         p_status: document.getElementById('formStatus').value,
@@ -326,7 +361,15 @@
         p_notes: document.getElementById('formNotes').value,
         p_recs: document.getElementById('formRecs').value
       });
-      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
+
+      // Update array URL foto di tabel stasiun
+      await supabaseClient.from('stasiun').update({ foto_urls: existingPhotos }).eq('id', activeStation.id);
+
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database';
+
+      alert("✅ LOG MAINTENANCE & FOTO BERHASIL DISIMPAN!");
+      fileInput.value = "";
       loadStationsFromDatabase(); closePanel();
     }
 
@@ -357,6 +400,28 @@
       document.getElementById('valNotes').innerText = item.catatan || '-';
       document.getElementById('valRecs').innerText = item.rekomendasi || '-';
 
+      // MANAJEMEN TAMPILAN FOTO DOKUMENTASI
+      const galleryEl = document.getElementById('docGallery');
+      const noImgEl = document.getElementById('noImgText');
+      galleryEl.innerHTML = '';
+
+      let photos = Array.isArray(item.foto_urls) ? item.foto_urls : [];
+      if (photos.length > 0) {
+        photos.forEach(url => {
+          const a = document.createElement('a');
+          a.href = url; a.target = '_blank';
+          const img = document.createElement('img');
+          img.src = url; img.className = 'doc-img-item'; img.alt = 'Dokumentasi Lapangan';
+          a.appendChild(img);
+          galleryEl.appendChild(a);
+        });
+        galleryEl.style.display = 'flex';
+        noImgEl.style.display = 'none';
+      } else {
+        galleryEl.style.display = 'none';
+        noImgEl.style.display = 'inline';
+      }
+
       const offBox = document.getElementById('offReportSection');
       if (item.status === 'OFF' && item.tgl_laporan_mati) {
         document.getElementById('valOffDate').innerText = item.tgl_laporan_mati;
@@ -365,6 +430,8 @@
         offBox.style.display = 'block';
       } else offBox.style.display = 'none';
 
+      document.getElementById('formStatus').value = item.status || 'ON';
+      document.getElementById('formDate').value = item.kunjungan_terakhir || new Date().toISOString().split('T')[0];
       document.getElementById('detailPanel').style.display = 'block';
     }
 
