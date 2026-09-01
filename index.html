@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Field Ops Command Center - BMKG Deli Serdang</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
@@ -32,10 +32,11 @@
       box-sizing: border-box; 
       font-family: 'Plus Jakarta Sans', sans-serif;
       -webkit-user-select: none; user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .mono { font-family: 'JetBrains Mono', monospace; }
-    body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); }
+    body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
     /* LOGIN SCREEN */
     #loginScreen { 
@@ -44,24 +45,24 @@
       display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; 
     }
     .login-box { 
-      background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; 
+      background: var(--panel-bg); width: 100%; max-width: 400px; padding: 24px; 
       border-radius: 12px; border: 1px solid var(--border-color); text-align: center; 
       box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
     }
     .login-box input { 
-      width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border-color); 
-      border-radius: 6px; font-size: 13px; color: #fff; margin-bottom: 12px; outline: none; 
+      width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border-color); 
+      border-radius: 8px; font-size: 14px; color: #fff; margin-bottom: 12px; outline: none; 
     }
     .login-box input:focus { border-color: var(--accent-neon); }
     .btn-login { 
       width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; 
-      border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; 
+      border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 13px;
     }
 
     /* DASHBOARD UTAMA */
     #appScreen { display: none; }
     .navbar { 
-      background: var(--panel-bg); color: #fff; padding: 12px 24px; display: flex; 
+      background: var(--panel-bg); color: #fff; padding: 10px 16px; display: flex; 
       justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); 
     }
     .btn-logout { 
@@ -70,27 +71,27 @@
     }
     .btn-logout:hover { background: #ef4444; color: #fff; }
 
-    .main-layout { max-width: 1600px; margin: 0 auto; padding: 16px; }
-    .controls-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-    .search-wrapper { position: relative; flex: 1; min-width: 260px; }
-    .search-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .main-layout { max-width: 1600px; margin: 0 auto; padding: 12px; }
+    .controls-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .search-wrapper { position: relative; flex: 1; min-width: 200px; }
+    .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
     .search-wrapper input { 
-      width: 100%; padding: 10px 14px 10px 40px; background: var(--panel-bg); border: 1px solid var(--border-color); 
+      width: 100%; padding: 10px 12px 10px 36px; background: var(--panel-bg); border: 1px solid var(--border-color); 
       border-radius: 8px; font-size: 12px; color: #fff; outline: none; 
     }
     .search-wrapper input:focus { border-color: var(--accent-neon); }
 
     .btn-action { 
-      background: var(--panel-bg); border: 1px solid var(--border-color); padding: 9px 14px; 
-      border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; 
+      background: var(--panel-bg); border: 1px solid var(--border-color); padding: 9px 12px; 
+      border-radius: 8px; font-size: 11px; font-weight: 600; color: var(--text-main); cursor: pointer; 
       display: flex; align-items: center; gap: 6px; 
     }
     .btn-action:hover { border-color: var(--accent-neon); color: var(--accent-neon); }
 
-    /* STATS TACTICAL GRID 8 KOLOM */
-    .stats-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 14px; }
+    /* STATS TACTICAL GRID RESPONSIVE */
+    .stats-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 12px; }
     .stat-card { 
-      background: var(--panel-bg); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border-color); 
+      background: var(--panel-bg); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-color); 
       cursor: pointer; position: relative; 
     }
     .stat-card:hover { border-color: var(--accent-neon); }
@@ -107,30 +108,30 @@
 
     .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
     .stat-title { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .stat-count { font-size: 20px; font-weight: 800; color: #fff; }
+    .stat-count { font-size: 18px; font-weight: 800; color: #fff; }
 
-    /* PETA & FLOATING WIDGET */
+    /* PETA & FLOATING WIDGET MOBILE ADAPTIVE */
     .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
-    #map { height: 72vh; min-height: 520px; width: 100%; }
+    #map { height: 72vh; min-height: 480px; width: 100%; }
 
     .stats-floating-box { 
-      position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; 
+      position: absolute; top: 10px; left: 10px; z-index: 999; width: 320px; max-width: calc(100% - 20px);
       background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); 
       border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); overflow: hidden; 
     }
-    .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-    .stats-box-body { padding: 12px; font-size: 11px; max-height: 420px; overflow-y: auto; }
+    .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .stats-box-body { padding: 10px; font-size: 11px; max-height: 380px; overflow-y: auto; }
     
     .stats-summary-table, .stats-detail-table { width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 8px; }
     .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: var(--text-muted); text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.2); }
-    .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 6px 4px; border: 1px solid var(--border-color); }
+    .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 5px 4px; border: 1px solid var(--border-color); }
     .priority-banner { 
       background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; 
-      border-radius: 6px; padding: 6px 10px; margin-bottom: 12px; display: flex; justify-content: space-between; 
+      border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; display: flex; justify-content: space-between; 
       align-items: center; font-weight: 700; font-size: 11px; cursor: pointer; 
     }
 
-    /* MARKER INSTRUMEN PRESISI TERKALIBRASI */
+    /* MARKER INSTRUMEN PRESISI */
     .custom-marker { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
     .marker-triangle { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid var(--seismo-color); filter: drop-shadow(0 0 3px var(--seismo-color)); }
     .marker-computer { background: var(--wrsng-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 6px var(--wrsng-color); }
@@ -140,21 +141,21 @@
     .marker-bolt { background: var(--lightning-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--lightning-color); }
     .marker-box { background: var(--magneto-color); color: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--magneto-color); }
 
-    /* SIDE PANEL DETAIL */
+    /* SIDE PANEL DETAIL (BOTTOM SHEET DI HP) */
     .detail-panel { 
-      position: absolute; bottom: 20px; right: 20px; width: 360px; max-height: 85%; overflow-y: auto; 
-      background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-radius: 10px; padding: 18px; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 999; display: none; border: 1px solid var(--border-color); 
+      position: absolute; bottom: 12px; right: 12px; width: 360px; max-height: 85%; overflow-y: auto; 
+      background: rgba(17, 24, 39, 0.96); backdrop-filter: blur(10px); border-radius: 12px; padding: 16px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 999; display: none; border: 1px solid var(--border-color); 
     }
-    .close-btn { float: right; cursor: pointer; color: var(--text-muted); }
+    .close-btn { float: right; cursor: pointer; color: var(--text-muted); font-size: 18px; }
     .close-btn:hover { color: #fff; }
 
     .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; }
     .badge-on { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
     .badge-off { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
 
-    .info-section { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin: 12px 0; font-size: 11px; }
-    .info-item { margin-bottom: 8px; }
+    .info-section { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; }
+    .info-item { margin-bottom: 6px; }
     .info-label { font-weight: 700; color: var(--accent-neon); display: block; margin-bottom: 2px; text-transform: uppercase; font-size: 10px; }
     .off-report-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; }
 
@@ -163,18 +164,41 @@
     
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 11px; color: #fff; outline: none; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; color: #fff; outline: none; }
     
-    .btn-submit { width: 100%; background: var(--seismo-color); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; text-transform: uppercase; }
-    .btn-bypass-off { width: 100%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
-    .btn-direction { display: block; width: 100%; text-align: center; background: #0f172a; border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 8px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700; margin-top: 8px; }
+    .btn-submit { width: 100%; background: var(--seismo-color); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; text-transform: uppercase; }
+    .btn-bypass-off { width: 100%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+    .btn-direction { display: block; width: 100%; text-align: center; background: #0f172a; border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 10px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700; margin-top: 8px; }
 
-    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    /* ============================================================
+       BREAKPOINT KHUSUS UNTUK HP / SMARTHONE
+       ============================================================ */
+    @media (max-width: 1200px) { 
+      .stats-grid { grid-template-columns: repeat(4, 1fr); } 
+    }
+
     @media (max-width: 640px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      #map { height: 55vh; }
-      .stats-floating-box { width: 290px; left: 10px; top: 10px; }
-      .detail-panel { width: calc(100% - 30px); left: 15px; right: 15px; bottom: 15px; }
+      .navbar { padding: 10px 12px; }
+      .navbar h1 { font-size: 13px !important; }
+      .main-layout { padding: 8px; }
+      
+      /* Grid 8 Kartu Menjadi 2 Kolom di HP */
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 8px; }
+      .stat-card { padding: 6px 8px; }
+      .stat-count { font-size: 16px; }
+
+      /* Penyesuaian Peta di HP */
+      #map { height: 60vh; min-height: 380px; }
+      
+      /* Floating Box Penyesuaian Layar Sentuh HP */
+      .stats-floating-box { width: calc(100% - 20px); left: 10px; top: 10px; }
+
+      /* Side Panel Jadi Bottom Sheet di HP */
+      .detail-panel { 
+        width: calc(100% - 20px); 
+        left: 10px; right: 10px; bottom: 10px; 
+        max-height: 80vh; padding: 14px;
+      }
     }
   </style>
 </head>
@@ -184,8 +208,8 @@
   <div id="loginScreen">
     <div class="login-box">
       <i class="fa-solid fa-microchip" style="font-size: 36px; color: var(--accent-neon);"></i>
-      <h2 style="font-size: 18px; color: var(--accent-neon); font-weight: 800; margin: 12px 0 4px 0;">FIELD OPS COMMAND CENTER</h2>
-      <p class="mono" style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px;">STASIUN GEOFISIKA KELAS I DELI SERDANG</p>
+      <h2 style="font-size: 16px; color: var(--accent-neon); font-weight: 800; margin: 12px 0 4px 0;">FIELD OPS COMMAND CENTER</h2>
+      <p class="mono" style="font-size: 10px; color: var(--text-muted); margin-bottom: 20px;">STASIUN GEOFISIKA KELAS I DELI SERDANG</p>
       <form onsubmit="handleLogin(event)">
         <input type="email" id="loginEmail" placeholder="petugas@bmkg.go.id" required>
         <input type="password" id="loginPassword" placeholder="••••••••" required>
@@ -198,8 +222,8 @@
   <div id="appScreen">
     <div class="navbar">
       <div>
-        <h1 style="font-size: 16px; margin: 0;">STASIUN GEOFISIKA KELAS I DELI SERDANG</h1>
-        <p class="mono" style="font-size: 10px; color: var(--accent-neon); margin: 2px 0 0 0;"><i class="fa-solid fa-circle" style="font-size: 8px; color: #10b981;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</p>
+        <h1 style="font-size: 15px; margin: 0;">STASIUN GEOFISIKA KELAS I DELI SERDANG</h1>
+        <p class="mono" style="font-size: 9px; color: var(--accent-neon); margin: 2px 0 0 0;"><i class="fa-solid fa-circle" style="font-size: 7px; color: #10b981;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</p>
       </div>
       <button class="btn-logout" onclick="handleLogout()"><i class="fa-solid fa-power-off"></i> KELUAR</button>
     </div>
@@ -208,27 +232,27 @@
       <div class="controls-bar">
         <div class="search-wrapper">
           <i class="fa-solid fa-terminal"></i>
-          <input type="text" id="searchInput" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
+          <input type="text" id="searchInput" placeholder="Cari Kode Stasiun / ID..." onkeyup="searchStation()">
         </div>
         <button class="btn-action" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs"></i> Posisi Saya</button>
-        <button class="btn-action" onclick="resetFilter()"><i class="fa-solid fa-rotate"></i> Reset Layer</button>
+        <button class="btn-action" onclick="resetFilter()"><i class="fa-solid fa-rotate"></i> Reset</button>
       </div>
 
       <div class="stats-grid">
         <div class="stat-card card-all" onclick="resetFilter()"><div class="stat-header"><span class="stat-title">Total</span><i class="fa-solid fa-network-wired" style="color: var(--accent-neon);"></i></div><div class="stat-count mono" id="count-total">0</div></div>
-        <div class="stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-header"><span class="stat-title">Seismograph</span><i class="fa-solid fa-play fa-rotate-270" style="color: var(--seismo-color);"></i></div><div class="stat-count mono" id="count-seismo">0</div></div>
+        <div class="stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-header"><span class="stat-title">Seismo</span><i class="fa-solid fa-play fa-rotate-270" style="color: var(--seismo-color);"></i></div><div class="stat-count mono" id="count-seismo">0</div></div>
         <div class="stat-card card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-header"><span class="stat-title">WRSNG</span><i class="fa-solid fa-desktop" style="color: var(--wrsng-color);"></i></div><div class="stat-count mono" id="count-wrsng">0</div></div>
-        <div class="stat-card card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-header"><span class="stat-title">Accelerograph</span><i class="fa-solid fa-circle" style="color: var(--accel-color);"></i></div><div class="stat-count mono" id="count-accel">0</div></div>
-        <div class="stat-card card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-header"><span class="stat-title">Intensitymeter</span><i class="fa-solid fa-star" style="color: var(--inten-color);"></i></div><div class="stat-count mono" id="count-inten">0</div></div>
-        <div class="stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-header"><span class="stat-title">Tsunami Gauge</span><i class="fa-solid fa-anchor" style="color: var(--tsunami-color);"></i></div><div class="stat-count mono" id="count-tsunami">0</div></div>
-        <div class="stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-header"><span class="stat-title">Lightning Det.</span><i class="fa-solid fa-bolt" style="color: var(--lightning-color);"></i></div><div class="stat-count mono" id="count-lightning">0</div></div>
-        <div class="stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-header"><span class="stat-title">Magnetometer</span><i class="fa-solid fa-cube" style="color: var(--magneto-color);"></i></div><div class="stat-count mono" id="count-magneto">0</div></div>
+        <div class="stat-card card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-header"><span class="stat-title">Accel</span><i class="fa-solid fa-circle" style="color: var(--accel-color);"></i></div><div class="stat-count mono" id="count-accel">0</div></div>
+        <div class="stat-card card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-header"><span class="stat-title">Inten</span><i class="fa-solid fa-star" style="color: var(--inten-color);"></i></div><div class="stat-count mono" id="count-inten">0</div></div>
+        <div class="stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-header"><span class="stat-title">Tsunami</span><i class="fa-solid fa-anchor" style="color: var(--tsunami-color);"></i></div><div class="stat-count mono" id="count-tsunami">0</div></div>
+        <div class="stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-header"><span class="stat-title">Lightning</span><i class="fa-solid fa-bolt" style="color: var(--lightning-color);"></i></div><div class="stat-count mono" id="count-lightning">0</div></div>
+        <div class="stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-header"><span class="stat-title">Magneto</span><i class="fa-solid fa-cube" style="color: var(--magneto-color);"></i></div><div class="stat-count mono" id="count-magneto">0</div></div>
       </div>
 
       <div class="map-container">
         <div class="stats-floating-box">
           <div class="stats-box-header">
-            <div style="font-size: 12px; font-weight: 800;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-neon);"></i> STATISTIK ALOPTAMA</div>
+            <div style="font-size: 11px; font-weight: 800;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-neon);"></i> STATISTIK ALOPTAMA</div>
             <i id="statsToggleIcon" class="fa-solid fa-chevron-up" style="cursor:pointer;" onclick="toggleStatsBox()"></i>
           </div>
           <div id="statsBoxBody" class="stats-box-body">
@@ -238,7 +262,7 @@
             </table>
             <div class="priority-banner mono" onclick="filterByPriority()">
               <span><i class="fa-solid fa-triangle-exclamation"></i> PRIORITAS KUNJUNGAN (OFF)</span>
-              <span id="tbl-priority-total" style="font-size: 13px;">0 SITE</span>
+              <span id="tbl-priority-total" style="font-size: 12px;">0 SITE</span>
             </div>
             <table class="stats-detail-table mono">
               <thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead>
@@ -384,7 +408,6 @@
           magneto: '<div class="marker-box"><i class="fa-solid fa-cube"></i></div>'
         }[item.kategori] || '';
 
-        // ANCHOR DENGAN TITIK TENGAH PRESISI (MENCEGAH BIKIN GESER SAAT ZOOM)
         const iconSizeMap = { seismo: [20, 20], wrsng: [24, 24], accel: [18, 18], inten: [22, 22], tsunami: [24, 24], lightning: [24, 24], magneto: [22, 22] };
         const sz = iconSizeMap[item.kategori] || [24, 24];
         
@@ -392,7 +415,7 @@
           className: 'custom-marker', 
           html: iconHtml, 
           iconSize: sz,
-          iconAnchor: [sz[0] / 2, sz[1] / 2] // Titik pusat terkalibrasi presisi
+          iconAnchor: [sz[0] / 2, sz[1] / 2]
         });
 
         const marker = L.marker([item.lat, item.lng], { icon }).on('click', () => { 
@@ -441,7 +464,7 @@
 
       const btnSubmit = document.getElementById('btnSubmitForm');
       btnSubmit.disabled = true;
-      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah Data...';
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah...';
 
       let existingPhotos = Array.isArray(activeStation.foto_urls) ? activeStation.foto_urls : [];
       const fileInput = document.getElementById('formPhoto');
@@ -475,15 +498,14 @@
       btnSubmit.disabled = false;
       btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database';
 
-      alert("✅ LOG MAINTENANCE & FOTO BERHASIL DISIMPAN!");
+      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
       fileInput.value = "";
       loadStationsFromDatabase(); closePanel();
     }
 
-    // GEOLOKASI CONTINUOUS WATCH KINERJA HIGH-ACCURACY
     function locateUser() {
       const btn = document.getElementById('btnLocateUser');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Melacak Presisi GPS...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Melacak...';
 
       if (!navigator.geolocation) {
         alert("⚠️ Perangkat Anda tidak mendukung fitur Geolocation GPS.");
@@ -498,17 +520,15 @@
           if (userLocationMarker) map.removeLayer(userLocationMarker);
           if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
 
-          // Marker Teknisi
           userLocationMarker = L.marker([lat, lng], {
             icon: L.divIcon({
               className: 'custom-marker',
-              html: '<div style="background:#2563eb; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px #2563eb;"><i class="fa-solid fa-user-gear"></i></div>',
-              iconSize: [28, 28],
-              iconAnchor: [14, 14]
+              html: '<div style="background:#2563eb; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px #2563eb;"><i class="fa-solid fa-user-gear"></i></div>',
+              iconSize: [26, 26],
+              iconAnchor: [13, 13]
             })
           }).addTo(map);
 
-          // Lingkaran Toleransi Akurasi GPS
           userAccuracyCircle = L.circle([lat, lng], {
             radius: accuracy, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.15, weight: 1
           }).addTo(map);
@@ -519,7 +539,7 @@
         },
         err => {
           btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Posisi Saya';
-          alert("⚠️ Gagal melacak posisi. Pastikan GPS/Location sudah diaktifkan di pengaturan browser Anda.");
+          alert("⚠️ Gagal melacak posisi. Pastikan izin Lokasi/GPS sudah diberikan pada browser Anda.");
         },
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
       );
@@ -569,7 +589,7 @@
       document.getElementById('detailPanel').style.display = 'block';
     }
 
-    function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [50, 50] }); }
+    function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [30, 30] }); }
     function hideAllLayers() { Object.keys(groups).forEach(k => map.removeLayer(groups[k])); }
     function resetFilter() { hideAllLayers(); Object.keys(catMap).forEach(k => map.addLayer(groups[k])); map.setView([2.5, 99.2], 7); closePanel(); }
     function toggleLayerFilter(type) { hideAllLayers(); if (groups[type]) map.addLayer(groups[type]); closePanel(); }
