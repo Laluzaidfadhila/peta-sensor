@@ -5,159 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Field Ops Command Center - BMKG Deli Serdang</title>
 
-  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- CSS Leaflet.js -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
-  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg-dark: #0a0f1d; 
-      --panel-bg: #111827; 
-      --border-color: #374151; 
-      --accent-neon: #38bdf8;
-      --text-main: #f3f4f6; 
-      --text-muted: #9ca3af; 
-      --seismo-color: #2563eb; 
-      --wrsng-color: #dc2626;
-      --accel-color: #16a34a; 
-      --inten-color: #d97706; 
-      --tsunami-color: #0891b2; 
-      --lightning-color: #7c3aed; 
-      --magneto-color: #0d9488;
+      --bg-dark: #0a0f1d; --panel-bg: #111827; --border-color: #374151; --accent-neon: #38bdf8;
+      --text-main: #f3f4f6; --text-muted: #9ca3af; --seismo-color: #2563eb; --wrsng-color: #dc2626;
+      --accel-color: #16a34a; --inten-color: #d97706; --tsunami-color: #0891b2; --lightning-color: #7c3aed; --magneto-color: #0d9488;
     }
-
-    /* MATIKAN SELEKSI TEKS UNTUK CEGAH COPAS */
-    * { 
-      box-sizing: border-box; 
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; }
     .mono { font-family: 'JetBrains Mono', monospace; }
     body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); }
 
-    /* LOGIN SCREEN */
-    #loginScreen { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); 
-      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; 
-    }
-    .login-box { 
-      background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; 
-      border-radius: 12px; border: 1px solid var(--border-color); text-align: center; 
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
-    }
-    .login-box input { 
-      width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border-color); 
-      border-radius: 6px; font-size: 13px; color: #fff; margin-bottom: 12px; outline: none; 
-    }
-    .login-box input:focus { border-color: var(--accent-neon); }
-    .btn-login { 
-      width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; 
-      border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; 
-      letter-spacing: 0.5px;
-    }
+    #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
+    .login-box { background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
+    .login-box input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: #fff; margin-bottom: 12px; outline: none; }
+    .btn-login { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
-    /* DASHBOARD UTAMA */
     #appScreen { display: none; }
-    .navbar { 
-      background: var(--panel-bg); color: #fff; padding: 12px 24px; display: flex; 
-      justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); 
-    }
-    .btn-logout { 
-      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); 
-      color: #fca5a5; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; 
-    }
-    .btn-logout:hover { background: #ef4444; color: #fff; }
+    .navbar { background: var(--panel-bg); color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .btn-logout { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
 
     .main-layout { max-width: 1600px; margin: 0 auto; padding: 16px; }
     .controls-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
     .search-wrapper { position: relative; flex: 1; min-width: 260px; }
     .search-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-    .search-wrapper input { 
-      width: 100%; padding: 10px 14px 10px 40px; background: var(--panel-bg); border: 1px solid var(--border-color); 
-      border-radius: 8px; font-size: 12px; color: #fff; outline: none; 
-    }
-    .search-wrapper input:focus { border-color: var(--accent-neon); }
+    .search-wrapper input { width: 100%; padding: 10px 14px 10px 40px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; color: #fff; outline: none; }
+    .btn-action { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; }
 
-    .btn-action { 
-      background: var(--panel-bg); border: 1px solid var(--border-color); padding: 9px 14px; 
-      border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; 
-      display: flex; align-items: center; gap: 6px; transition: all 0.2s;
-    }
-    .btn-action:hover { border-color: var(--accent-neon); color: var(--accent-neon); }
-
-    /* STATS TACTICAL GRID 8 KOLOM */
     .stats-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 14px; }
-    .stat-card { 
-      background: var(--panel-bg); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border-color); 
-      cursor: pointer; position: relative; transition: transform 0.15s;
-    }
-    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-neon); }
+    .stat-card { background: var(--panel-bg); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border-color); cursor: pointer; position: relative; }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 8px 0 0 8px; }
-    
-    .card-all::before { background: var(--accent-neon); } 
-    .card-seismo::before { background: var(--seismo-color); } 
-    .card-wrsng::before { background: var(--wrsng-color); } 
-    .card-accel::before { background: var(--accel-color); } 
-    .card-inten::before { background: var(--inten-color); } 
-    .card-tsunami::before { background: var(--tsunami-color); } 
-    .card-lightning::before { background: var(--lightning-color); } 
-    .card-magneto::before { background: var(--magneto-color); }
-
-    .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .card-all::before { background: var(--accent-neon); } .card-seismo::before { background: var(--seismo-color); } .card-wrsng::before { background: var(--wrsng-color); } .card-accel::before { background: var(--accel-color); } .card-inten::before { background: var(--inten-color); } .card-tsunami::before { background: var(--tsunami-color); } .card-lightning::before { background: var(--lightning-color); } .card-magneto::before { background: var(--magneto-color); }
     .stat-title { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .stat-count { font-size: 20px; font-weight: 800; color: #fff; }
 
-    /* PETA & FLOATING WIDGET */
     .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
     #map { height: 72vh; min-height: 520px; width: 100%; }
 
-    .stats-floating-box { 
-      position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; 
-      background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); 
-      border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); overflow: hidden; 
-    }
+    .stats-floating-box { position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); overflow: hidden; }
     .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
     .stats-box-body { padding: 12px; font-size: 11px; max-height: 420px; overflow-y: auto; }
-    
     .stats-summary-table, .stats-detail-table { width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 8px; }
     .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: var(--text-muted); text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.2); }
     .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 6px 4px; border: 1px solid var(--border-color); }
-    .priority-banner { 
-      background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; 
-      border-radius: 6px; padding: 6px 10px; margin-bottom: 12px; display: flex; justify-content: space-between; 
-      align-items: center; font-weight: 700; font-size: 11px; cursor: pointer; 
-    }
+    .priority-banner { background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; border-radius: 6px; padding: 6px 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 11px; cursor: pointer; }
 
-    /* MARKER INSTRUMEN */
     .custom-marker { display: flex; align-items: center; justify-content: center; }
-    .marker-triangle { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 22px solid var(--seismo-color); filter: drop-shadow(0 0 4px var(--seismo-color)); }
-    .marker-computer { background: var(--wrsng-color); color: white; width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 8px var(--wrsng-color); }
-    .marker-circle { background: var(--accel-color); width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px var(--accel-color); }
-    .marker-star { color: var(--inten-color); font-size: 24px; filter: drop-shadow(0 0 4px var(--inten-color)); }
-    .marker-anchor { background: var(--tsunami-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; box-shadow: 0 0 8px var(--tsunami-color); }
-    .marker-bolt { background: var(--lightning-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; box-shadow: 0 0 8px var(--lightning-color); }
-    .marker-box { background: var(--magneto-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; box-shadow: 0 0 8px var(--magneto-color); }
+    .marker-triangle { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 22px solid var(--seismo-color); }
+    .marker-computer { background: var(--wrsng-color); color: white; width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+    .marker-circle { background: var(--accel-color); width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; }
+    .marker-star { color: var(--inten-color); font-size: 24px; }
+    .marker-anchor { background: var(--tsunami-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
+    .marker-bolt { background: var(--lightning-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
+    .marker-box { background: var(--magneto-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
 
-    /* SIDE PANEL DETAIL */
-    .detail-panel { 
-      position: absolute; bottom: 20px; right: 20px; width: 360px; max-height: 85%; overflow-y: auto; 
-      background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-radius: 10px; padding: 18px; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 999; display: none; border: 1px solid var(--border-color); 
-    }
+    .detail-panel { position: absolute; bottom: 20px; right: 20px; width: 360px; max-height: 85%; overflow-y: auto; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-radius: 10px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 999; display: none; border: 1px solid var(--border-color); }
     .close-btn { float: right; cursor: pointer; color: var(--text-muted); }
-    .close-btn:hover { color: #fff; }
-
     .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; }
     .badge-on { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
     .badge-off { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
@@ -167,32 +74,21 @@
     .info-label { font-weight: 700; color: var(--accent-neon); display: block; margin-bottom: 2px; text-transform: uppercase; font-size: 10px; }
     .off-report-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; }
 
-    .doc-img-item { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-color); background: #000; }
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 11px; color: #fff; outline: none; }
-    
     .btn-submit { width: 100%; background: var(--seismo-color); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; text-transform: uppercase; }
     .btn-bypass-off { width: 100%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
     .btn-direction { display: block; width: 100%; text-align: center; background: #0f172a; border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 8px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700; margin-top: 8px; }
-
-    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-    @media (max-width: 640px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      #map { height: 55vh; }
-      .stats-floating-box { width: 290px; left: 10px; top: 10px; }
-      .detail-panel { width: calc(100% - 30px); left: 15px; right: 15px; bottom: 15px; }
-    }
   </style>
 </head>
 <body oncontextmenu="return false;">
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen">
     <div class="login-box">
       <i class="fa-solid fa-microchip" style="font-size: 36px; color: var(--accent-neon);"></i>
       <h2 style="font-size: 18px; color: var(--accent-neon); font-weight: 800; margin: 12px 0 4px 0;">FIELD OPS COMMAND CENTER</h2>
-      <p class="mono" style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px;">STASIUN GEOFISIKA KELAS I DELI SERDANG</p>
+      <p class="mono" style="font-size: 11px; color: var(--text-muted);">STASIUN GEOFISIKA KELAS I DELI SERDANG</p>
       <form onsubmit="handleLogin(event)">
         <input type="email" id="loginEmail" placeholder="petugas@bmkg.go.id" required>
         <input type="password" id="loginPassword" placeholder="••••••••" required>
@@ -201,7 +97,6 @@
     </div>
   </div>
 
-  <!-- DASHBOARD UTAMA -->
   <div id="appScreen">
     <div class="navbar">
       <div>
@@ -217,20 +112,19 @@
           <i class="fa-solid fa-terminal"></i>
           <input type="text" id="searchInput" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
         </div>
-        <!-- TOMBOL POSISI SAYA (DENGAN FEEDBACK GPS PERBAIKAN) -->
         <button class="btn-action" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs"></i> Posisi Saya</button>
         <button class="btn-action" onclick="resetFilter()"><i class="fa-solid fa-rotate"></i> Reset Layer</button>
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card card-all" onclick="resetFilter()"><div class="stat-header"><span class="stat-title">Total</span><i class="fa-solid fa-network-wired" style="color: var(--accent-neon);"></i></div><div class="stat-count mono" id="count-total">0</div></div>
-        <div class="stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-header"><span class="stat-title">Seismograph</span><i class="fa-solid fa-play fa-rotate-270" style="color: var(--seismo-color);"></i></div><div class="stat-count mono" id="count-seismo">0</div></div>
-        <div class="stat-card card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-header"><span class="stat-title">WRSNG</span><i class="fa-solid fa-desktop" style="color: var(--wrsng-color);"></i></div><div class="stat-count mono" id="count-wrsng">0</div></div>
-        <div class="stat-card card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-header"><span class="stat-title">Accelerograph</span><i class="fa-solid fa-circle" style="color: var(--accel-color);"></i></div><div class="stat-count mono" id="count-accel">0</div></div>
-        <div class="stat-card card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-header"><span class="stat-title">Intensitymeter</span><i class="fa-solid fa-star" style="color: var(--inten-color);"></i></div><div class="stat-count mono" id="count-inten">0</div></div>
-        <div class="stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-header"><span class="stat-title">Tsunami Gauge</span><i class="fa-solid fa-anchor" style="color: var(--tsunami-color);"></i></div><div class="stat-count mono" id="count-tsunami">0</div></div>
-        <div class="stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-header"><span class="stat-title">Lightning Det.</span><i class="fa-solid fa-bolt" style="color: var(--lightning-color);"></i></div><div class="stat-count mono" id="count-lightning">0</div></div>
-        <div class="stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-header"><span class="stat-title">Magnetometer</span><i class="fa-solid fa-cube" style="color: var(--magneto-color);"></i></div><div class="stat-count mono" id="count-magneto">0</div></div>
+        <div class="stat-card card-all" onclick="resetFilter()"><div class="stat-header"><span class="stat-title">Total</span></div><div class="stat-count mono" id="count-total">0</div></div>
+        <div class="stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-header"><span class="stat-title">Seismograph</span></div><div class="stat-count mono" id="count-seismo">0</div></div>
+        <div class="stat-card card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-header"><span class="stat-title">WRSNG</span></div><div class="stat-count mono" id="count-wrsng">0</div></div>
+        <div class="stat-card card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-header"><span class="stat-title">Accelerograph</span></div><div class="stat-count mono" id="count-accel">0</div></div>
+        <div class="stat-card card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-header"><span class="stat-title">Intensitymeter</span></div><div class="stat-count mono" id="count-inten">0</div></div>
+        <div class="stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-header"><span class="stat-title">Tsunami Gauge</span></div><div class="stat-count mono" id="count-tsunami">0</div></div>
+        <div class="stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-header"><span class="stat-title">Lightning Det.</span></div><div class="stat-count mono" id="count-lightning">0</div></div>
+        <div class="stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-header"><span class="stat-title">Magnetometer</span></div><div class="stat-count mono" id="count-magneto">0</div></div>
       </div>
 
       <div class="map-container">
@@ -272,11 +166,6 @@
             <div class="info-item"><span class="info-label">Kegiatan Dilakukan:</span><span id="valActivity">-</span></div>
             <div class="info-item"><span class="info-label">Catatan Pemeliharaan:</span><span id="valNotes">-</span></div>
             <div class="info-item"><span class="info-label">Rekomendasi Lanjutan:</span><span id="valRecs">-</span></div>
-            <div class="info-item">
-              <span class="info-label">Dokumentasi Lapangan:</span>
-              <div id="docGallery" style="display:flex; flex-direction:column; gap:8px;"></div>
-              <span id="noImgText" style="color: var(--text-muted); font-style: italic;">Tidak ada berkas foto</span>
-            </div>
           </div>
 
           <div id="offReportSection" class="off-report-box" style="display: none;">
@@ -313,7 +202,6 @@
               <div class="form-group"><label>Kegiatan Pemeliharaan</label><input type="text" id="formActivity" required></div>
               <div class="form-group"><label>Catatan Teknisi</label><textarea id="formNotes" rows="2"></textarea></div>
               <div class="form-group"><label>Rekomendasi</label><textarea id="formRecs" rows="2"></textarea></div>
-              <div class="form-group"><label>Upload Foto</label><input type="file" id="formPhoto" accept="image/*" multiple></div>
               <button type="submit" class="btn-submit"><i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database</button>
             </form>
           </details>
@@ -326,32 +214,17 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // ============================================================
-    // PROTEKSI KEAMANAN: ANTI-INSPECT ELEMENT & COPAS
-    // ============================================================
+    // PROTEKSI ANTI INSPECT & COPAS
     document.addEventListener('contextmenu', e => e.preventDefault());
-
     document.addEventListener('keydown', e => {
-      // Blokir F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S
-      if (
-        e.keyCode === 123 || 
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || 
-        (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))
-      ) {
-        e.preventDefault();
-        return false;
-      }
+      if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))) e.preventDefault();
     });
 
-    // ============================================================
-    // KONFIGURASI SUPABASE & APLIKASI
-    // ============================================================
     const SUPABASE_URL = "https://sazdesulrndmyluqiyie.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_s2uJAXTsqj1JkVRZrBHFFA_3KsyTEEC";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let map, activeStation = null, userLocationMarker = null, allMarkers = [];
-    let groups = {};
+    let map, activeStation = null, userLocationMarker = null, allMarkers = [], groups = {};
     const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -369,8 +242,7 @@
         email: document.getElementById('loginEmail').value,
         password: document.getElementById('loginPassword').value
       });
-      if (error) alert("Login Gagal: " + error.message);
-      else location.reload();
+      if (error) alert("Login Gagal: " + error.message); else location.reload();
     }
 
     async function handleLogout() { await supabaseClient.auth.signOut(); location.reload(); }
@@ -399,12 +271,9 @@
         if (isUp) counts.up++; else counts.down++;
 
         const iconHtml = {
-          seismo: '<div class="marker-triangle"></div>',
-          wrsng: '<div class="marker-computer"><i class="fa-solid fa-desktop"></i></div>',
-          accel: '<div class="marker-circle"></div>',
-          inten: '<div class="marker-star"><i class="fa-solid fa-star"></i></div>',
-          tsunami: '<div class="marker-anchor"><i class="fa-solid fa-anchor"></i></div>',
-          lightning: '<div class="marker-bolt"><i class="fa-solid fa-bolt"></i></div>',
+          seismo: '<div class="marker-triangle"></div>', wrsng: '<div class="marker-computer"><i class="fa-solid fa-desktop"></i></div>',
+          accel: '<div class="marker-circle"></div>', inten: '<div class="marker-star"><i class="fa-solid fa-star"></i></div>',
+          tsunami: '<div class="marker-anchor"><i class="fa-solid fa-anchor"></i></div>', lightning: '<div class="marker-bolt"><i class="fa-solid fa-bolt"></i></div>',
           magneto: '<div class="marker-box"><i class="fa-solid fa-cube"></i></div>'
         }[item.kategori] || '';
 
@@ -433,57 +302,44 @@
       });
     }
 
-    // ============================================================
-    // PERBAIKAN FITUR POSISI SAYA (GEOLOCATION GPS)
-    // ============================================================
+    // PEMANGGILAN STORED PROCEDURE DATABASE
+    async function saveBypassOffReport(e) {
+      e.preventDefault();
+      if (!activeStation) return;
+      await supabaseClient.rpc('rpc_save_bypass_off', {
+        p_id: activeStation.id,
+        p_reason: document.getElementById('bypassReason').value,
+        p_notes: document.getElementById('bypassNotes').value
+      });
+      alert("⚠️ LAPORAN ALAT MATI TERSIMPAN!");
+      loadStationsFromDatabase(); closePanel();
+    }
+
+    async function saveReportToDatabase(e) {
+      e.preventDefault();
+      if (!activeStation) return;
+      await supabaseClient.rpc('rpc_save_maintenance_log', {
+        p_id: activeStation.id,
+        p_status: document.getElementById('formStatus').value,
+        p_date: document.getElementById('formDate').value,
+        p_activity: document.getElementById('formActivity').value,
+        p_notes: document.getElementById('formNotes').value,
+        p_recs: document.getElementById('formRecs').value
+      });
+      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
+      loadStationsFromDatabase(); closePanel();
+    }
+
     function locateUser() {
       const btn = document.getElementById('btnLocateUser');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari Lokasi...';
-
-      if (!navigator.geolocation) {
-        alert("⚠️ Perangkat atau browser Anda tidak mendukung fitur Geolocation.");
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        if (userLocationMarker) map.removeLayer(userLocationMarker);
+        userLocationMarker = L.marker([lat, lng]).addTo(map).bindPopup("📍 Lokasi Teknisi").openPopup();
+        map.flyTo([lat, lng], 14);
         btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Posisi Saya';
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          if (userLocationMarker) map.removeLayer(userLocationMarker);
-
-          userLocationMarker = L.marker([lat, lng], {
-            icon: L.divIcon({
-              className: 'custom-marker',
-              html: '<div style="background:#2563eb; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px #2563eb;"><i class="fa-solid fa-user-gear"></i></div>',
-              iconSize: [28, 28]
-            })
-          }).addTo(map);
-
-          userLocationMarker.bindPopup("<b>📍 Lokasi Teknisi Lapangan</b><br>Lat: " + lat.toFixed(5) + ", Lng: " + lng.toFixed(5)).openPopup();
-          map.flyTo([lat, lng], 14);
-
-          btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Posisi Saya';
-        },
-        error => {
-          btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Posisi Saya';
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              alert("⚠️ Izin lokasi ditolak. Silakan izinkan akses lokasi/GPS pada browser Anda.");
-              break;
-            case error.POSITION_UNAVAILABLE:
-              alert("⚠️ Informasi lokasi tidak tersedia saat ini.");
-              break;
-            case error.TIMEOUT:
-              alert("⚠️ Waktu pencarian lokasi habis (Timeout).");
-              break;
-            default:
-              alert("⚠️ Terjadi kesalahan saat mengambil lokasi.");
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+      }, () => { alert("⚠️ Gagal mengambil lokasi GPS."); btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Posisi Saya'; }, { enableHighAccuracy: true });
     }
 
     function openDetailPanel(item) {
@@ -512,45 +368,13 @@
       document.getElementById('detailPanel').style.display = 'block';
     }
 
-    async function saveBypassOffReport(e) {
-      e.preventDefault();
-      if (!activeStation) return;
-      const updatedData = { status: 'OFF', penyebab_mati: document.getElementById('bypassReason').value, troubleshoot_mati: document.getElementById('bypassNotes').value };
-      await supabaseClient.from('stasiun').update(updatedData).eq('id', activeStation.id);
-      alert("⚠️ LAPORAN ALAT MATI TERSIMPAN!");
-      loadStationsFromDatabase(); closePanel();
-    }
-
-    async function saveReportToDatabase(e) {
-      e.preventDefault();
-      if (!activeStation) return;
-      const updatedData = { status: document.getElementById('formStatus').value, kunjungan_terakhir: document.getElementById('formDate').value, kegiatan: document.getElementById('formActivity').value, catatan: document.getElementById('formNotes').value, rekomendasi: document.getElementById('formRecs').value };
-      await supabaseClient.from('stasiun').update(updatedData).eq('id', activeStation.id);
-      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
-      loadStationsFromDatabase(); closePanel();
-    }
-
-    function filterByPriority() {
-      hideAllLayers(); map.addLayer(groups['off']); closePanel();
-      const offM = allMarkers.filter(m => m.data.status === 'OFF');
-      if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [50, 50] });
-    }
-
+    function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [50, 50] }); }
     function hideAllLayers() { Object.keys(groups).forEach(k => map.removeLayer(groups[k])); }
     function resetFilter() { hideAllLayers(); Object.keys(catMap).forEach(k => map.addLayer(groups[k])); map.setView([2.5, 99.2], 7); closePanel(); }
     function toggleLayerFilter(type) { hideAllLayers(); if (groups[type]) map.addLayer(groups[type]); closePanel(); }
     function closePanel() { document.getElementById('detailPanel').style.display = 'none'; activeStation = null; }
     function toggleStatsBox() { const b = document.getElementById('statsBoxBody'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; }
-    function searchStation() {
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      if (!q) return;
-      const match = allMarkers.find(m => m.title.includes(q));
-      if (match) {
-        if (!map.hasLayer(match.group)) map.addLayer(match.group);
-        map.flyTo([match.data.lat, match.data.lng], 13);
-        match.marker.fire('click');
-      }
-    }
+    function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) map.addLayer(match.group); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
   </script>
 </body>
 </html>
