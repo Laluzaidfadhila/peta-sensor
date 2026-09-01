@@ -2,349 +2,370 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <!-- Meta tag viewport agar otomatis merespons layar HP -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</title>
-  
-  <!-- CSS Leaflet.js -->
-  <link 
-    rel="stylesheet" 
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-    crossorigin=""
-  />
+  <title>Field Ops Command Center - BMKG Deli Serdang</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Reset & Base Styles */
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg-dark: #0a0f1d; --panel-bg: #111827; --border-color: #374151; --accent-neon: #38bdf8;
+      --text-main: #f3f4f6; --text-muted: #9ca3af; --seismo-color: #2563eb; --wrsng-color: #dc2626;
+      --accel-color: #16a34a; --inten-color: #d97706; --tsunami-color: #0891b2; --lightning-color: #7c3aed; --magneto-color: #0d9488;
     }
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    body { margin: 0; background-color: var(--bg-dark); color: var(--text-main); user-select: none; }
 
-    body {
-      margin: 0;
-      padding: 15px;
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
+    #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
+    .login-box { background: var(--panel-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
+    .login-box input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: #fff; margin-bottom: 12px; outline: none; }
+    .btn-login { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    #appScreen { display: none; }
+    .navbar { background: var(--panel-bg); color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .btn-logout { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
 
-    h2 {
-      margin-top: 0;
-      font-size: 20px;
-      color: #333;
-    }
+    .main-layout { max-width: 1600px; margin: 0 auto; padding: 16px; }
+    .controls-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .search-wrapper { position: relative; flex: 1; min-width: 260px; }
+    .search-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .search-wrapper input { width: 100%; padding: 10px 14px 10px 40px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; color: #fff; outline: none; }
+    .btn-action { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; }
 
-    p.subtitle {
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 15px;
-      line-height: 1.4;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat-card { background: var(--panel-bg); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border-color); cursor: pointer; position: relative; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 8px 0 0 8px; }
+    .card-all::before { background: var(--accent-neon); } .card-seismo::before { background: var(--seismo-color); } .card-wrsng::before { background: var(--wrsng-color); } .card-accel::before { background: var(--accel-color); } .card-inten::before { background: var(--inten-color); } .card-tsunami::before { background: var(--tsunami-color); } .card-lightning::before { background: var(--lightning-color); } .card-magneto::before { background: var(--magneto-color); }
+    .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .stat-title { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-count { font-size: 20px; font-weight: 800; color: #fff; }
 
-    /* Grid Card Statistik Responsif (Otomatis menyesuaikan jumlah kolom) */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 15px;
-    }
+    .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+    #map { height: 72vh; min-height: 520px; width: 100%; }
 
-    .card-aloptama {
-      background: #fafafa;
-      border: 1px solid #e0e0e0;
-      border-left: 4px solid #ccc;
-      padding: 10px 12px;
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+    .stats-floating-box { position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); overflow: hidden; }
+    .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .stats-box-body { padding: 12px; font-size: 11px; max-height: 420px; overflow-y: auto; }
+    .stats-summary-table, .stats-detail-table { width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 8px; }
+    .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: var(--text-muted); text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.2); }
+    .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 6px 4px; border: 1px solid var(--border-color); }
+    .priority-banner { background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5); color: #fca5a5; border-radius: 6px; padding: 6px 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 11px; cursor: pointer; }
 
-    .card-seismo { border-left-color: #2A81CB; }
-    .card-wrsng  { border-left-color: #CB2B3E; }
-    .card-accel  { border-left-color: #2AAD27; }
-    .card-inten  { border-left-color: #CACB2B; }
+    .custom-marker { display: flex; align-items: center; justify-content: center; }
+    .marker-triangle { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 22px solid var(--seismo-color); }
+    .marker-computer { background: var(--wrsng-color); color: white; width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+    .marker-circle { background: var(--accel-color); width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; }
+    .marker-star { color: var(--inten-color); font-size: 24px; }
+    .marker-anchor { background: var(--tsunami-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
+    .marker-bolt { background: var(--lightning-color); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
+    .marker-box { background: var(--magneto-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 12px; }
 
-    .card-title {
-      font-size: 11px;
-      font-weight: bold;
-      color: #555;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-    }
+    .detail-panel { position: absolute; bottom: 20px; right: 20px; width: 360px; max-height: 85%; overflow-y: auto; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border-radius: 10px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 999; display: none; border: 1px solid var(--border-color); }
+    .close-btn { float: right; cursor: pointer; color: var(--text-muted); }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; }
+    .badge-on { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-off { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
 
-    .card-count {
-      font-size: 20px;
-      font-weight: bold;
-      color: #222;
-      margin: 0;
-    }
+    .info-section { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin: 12px 0; font-size: 11px; }
+    .info-item { margin-bottom: 8px; }
+    .info-label { font-weight: 700; color: var(--accent-neon); display: block; margin-bottom: 2px; text-transform: uppercase; font-size: 10px; }
+    .off-report-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 11px; }
 
-    .badge {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-      flex-shrink: 0;
-    }
-    .badge-blue { background-color: #2A81CB; }
-    .badge-red { background-color: #CB2B3E; }
-    .badge-green { background-color: #2AAD27; }
-    .badge-gold { background-color: #CACB2B; }
-
-    /* Tinggi Peta Otomatis Menyeseuaikan HP */
-    #map {
-      height: 65vh; /* Menggunakan 65% tinggi layar HP */
-      min-height: 400px;
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-
-    /* Media Query Khusus Layar HP / Mobile */
-    @media (max-width: 600px) {
-      body {
-        padding: 8px;
-      }
-      .container {
-        padding: 12px;
-      }
-      h2 {
-        font-size: 18px;
-      }
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 Kolom rapi di layar HP kecil */
-      }
-      #map {
-        height: 55vh;
-      }
-      .leaflet-control-layers {
-        font-size: 11px;
-      }
-    }
+    .doc-img-item { width: 100%; height: auto; max-height: 220px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-color); background: #000; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; font-size: 11px; color: #fff; outline: none; }
+    .btn-submit { width: 100%; background: var(--seismo-color); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; text-transform: uppercase; }
+    .btn-bypass-off { width: 100%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; padding: 9px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+    .btn-direction { display: block; width: 100%; text-align: center; background: #0f172a; border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 8px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700; margin-top: 8px; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Peta Sebaran Aloptama Stasiun Geofisika Kelas I Deli Serdang</h2>
-    <p class="subtitle">Monitoring lokasi dan jumlah ketersediaan alat operasional utama BMKG di wilayah kerja Stasiun Geofisika Kelas I Deli Serdang.</p>
-
-    <!-- DASHBOARD STATISTIK ALOPTAMA -->
-    <div class="summary-grid">
-      <div class="card-aloptama card-seismo">
-        <div class="card-title">
-          <span class="badge badge-blue"></span> Seismograph
-        </div>
-        <div class="card-count" id="count-seismo">0</div>
-      </div>
-
-      <div class="card-aloptama card-wrsng">
-        <div class="card-title">
-          <span class="badge badge-red"></span> WRSNG
-        </div>
-        <div class="card-count" id="count-wrsng">0</div>
-      </div>
-
-      <div class="card-aloptama card-accel">
-        <div class="card-title">
-          <span class="badge badge-green"></span> Accelerograph
-        </div>
-        <div class="card-count" id="count-accel">0</div>
-      </div>
-
-      <div class="card-aloptama card-inten">
-        <div class="card-title">
-          <span class="badge badge-gold"></span> Intensitymeter
-        </div>
-        <div class="card-count" id="count-inten">0</div>
-      </div>
+  <div id="loginScreen">
+    <div class="login-box">
+      <i class="fa-solid fa-microchip" style="font-size: 36px; color: var(--accent-neon);"></i>
+      <h2>FIELD OPS COMMAND CENTER</h2>
+      <p class="mono" style="font-size: 11px; color: var(--text-muted);">STASIUN GEOFISIKA KELAS I DELI SERDANG</p>
+      <form onsubmit="handleLogin(event)">
+        <input type="email" id="loginEmail" placeholder="petugas@bmkg.go.id" required>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+        <button type="submit" class="btn-login"><i class="fa-solid fa-shield-halved"></i> Autentikasi Masuk</button>
+      </form>
     </div>
-
-    <!-- KONTAINER PETA -->
-    <div id="map"></div>
   </div>
 
-  <!-- JavaScript Leaflet.js -->
-  <script 
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-    crossorigin="">
-  </script>
+  <div id="appScreen">
+    <div class="navbar">
+      <div>
+        <h1 style="font-size: 16px; margin:0;">STASIUN GEOFISIKA KELAS I DELI SERDANG</h1>
+        <p class="mono" style="font-size: 10px; color: var(--accent-neon); margin:2px 0 0 0;"><i class="fa-solid fa-circle" style="font-size: 8px; color: #10b981;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</p>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()"><i class="fa-solid fa-power-off"></i> KELUAR</button>
+    </div>
 
+    <div class="main-layout">
+      <div class="controls-bar">
+        <div class="search-wrapper">
+          <i class="fa-solid fa-terminal"></i>
+          <input type="text" id="searchInput" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
+        </div>
+        <button class="btn-action" onclick="locateUser()"><i class="fa-solid fa-crosshairs"></i> Posisi Saya</button>
+        <button class="btn-action" onclick="resetFilter()"><i class="fa-solid fa-rotate"></i> Reset Layer</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card card-all" onclick="resetFilter()"><div class="stat-header"><span class="stat-title">Total</span></div><div class="stat-count mono" id="count-total">0</div></div>
+        <div class="stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-header"><span class="stat-title">Seismograph</span></div><div class="stat-count mono" id="count-seismo">0</div></div>
+        <div class="stat-card card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-header"><span class="stat-title">WRSNG</span></div><div class="stat-count mono" id="count-wrsng">0</div></div>
+        <div class="stat-card card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-header"><span class="stat-title">Accelerograph</span></div><div class="stat-count mono" id="count-accel">0</div></div>
+        <div class="stat-card card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-header"><span class="stat-title">Intensitymeter</span></div><div class="stat-count mono" id="count-inten">0</div></div>
+        <div class="stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-header"><span class="stat-title">Tsunami Gauge</span></div><div class="stat-count mono" id="count-tsunami">0</div></div>
+        <div class="stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-header"><span class="stat-title">Lightning Det.</span></div><div class="stat-count mono" id="count-lightning">0</div></div>
+        <div class="stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-header"><span class="stat-title">Magnetometer</span></div><div class="stat-count mono" id="count-magneto">0</div></div>
+      </div>
+
+      <div class="map-container">
+        <div class="stats-floating-box">
+          <div class="stats-box-header">
+            <div style="font-size: 12px; font-weight: 800;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-neon);"></i> STATISTIK ALOPTAMA</div>
+            <i id="statsToggleIcon" class="fa-solid fa-chevron-up" style="cursor:pointer;" onclick="toggleStatsBox()"></i>
+          </div>
+          <div id="statsBoxBody" class="stats-box-body">
+            <table class="stats-summary-table mono">
+              <thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead>
+              <tbody><tr><td id="tbl-total">0</td><td id="tbl-up" style="color:#34d399;">0</td><td id="tbl-down" style="color:#fca5a5;">0</td><td id="tbl-percent" style="color:var(--accent-neon);">0%</td></tr></tbody>
+            </table>
+            <div class="priority-banner mono" onclick="filterByPriority()">
+              <span><i class="fa-solid fa-triangle-exclamation"></i> PRIORITAS KUNJUNGAN (OFF)</span>
+              <span id="tbl-priority-total" style="font-size: 13px;">0 SITE</span>
+            </div>
+            <table class="stats-detail-table mono">
+              <thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead>
+              <tbody id="tbl-detail-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="map"></div>
+
+        <div id="detailPanel" class="detail-panel">
+          <span class="close-btn" onclick="closePanel()"><i class="fa-solid fa-xmark"></i></span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span id="panelCategory" class="mono" style="font-size: 10px; font-weight: 700; color: var(--accent-neon);">KATEGORI</span>
+            <span id="panelStatusBadge" class="status-badge badge-on">ON</span>
+          </div>
+          <h3 id="panelTitle" style="margin: 0; font-size: 15px;">Nama Stasiun</h3>
+          <p class="mono" style="font-size: 11px; color: var(--text-muted); margin: 4px 0 10px 0;"><i class="fa-solid fa-location-crosshairs"></i> <span id="panelCoords">0, 0</span></p>
+
+          <div class="info-section">
+            <div style="font-weight: 700; font-size: 11px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;"><i class="fa-solid fa-wrench"></i> LOG KUNJUNGAN TEKNISI</div>
+            <div class="info-item"><span class="info-label">Kunjungan Terakhir:</span><span id="valLastVisit" class="mono">-</span></div>
+            <div class="info-item"><span class="info-label">Kegiatan Dilakukan:</span><span id="valActivity">-</span></div>
+            <div class="info-item"><span class="info-label">Catatan Pemeliharaan:</span><span id="valNotes">-</span></div>
+            <div class="info-item"><span class="info-label">Rekomendasi Lanjutan:</span><span id="valRecs">-</span></div>
+            <div class="info-item">
+              <span class="info-label">Dokumentasi Lapangan:</span>
+              <div id="docGallery" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <span id="noImgText" style="color: var(--text-muted); font-style: italic;">Tidak ada berkas foto</span>
+            </div>
+          </div>
+
+          <div id="offReportSection" class="off-report-box" style="display: none;">
+            <div style="font-weight: 800; color: #fca5a5; font-size: 10px; border-bottom: 1px solid rgba(239, 68, 68, 0.3); padding-bottom: 4px; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> LAPORAN KONDISI MATI (BYPASS)</div>
+            <div class="info-item"><span class="info-label" style="color: #fca5a5;">TANGGAL LAPOR MATI:</span><span id="valOffDate" class="mono">-</span></div>
+            <div class="info-item"><span class="info-label" style="color: #fca5a5;">DUGAAN PENYEBAB:</span><span id="valOffReason">-</span></div>
+            <div class="info-item"><span class="info-label" style="color: #fca5a5;">RINCIAN TROUBLESHOOT:</span><span id="valOffNotes">-</span></div>
+          </div>
+
+          <details style="margin-top: 10px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.4); border-radius: 6px; padding: 8px;">
+            <summary style="font-size: 11px; font-weight: 700; cursor: pointer; color: #fca5a5;"><i class="fa-solid fa-triangle-exclamation"></i> Bypass Laporkan Alat Mati (Urgent)</summary>
+            <form style="margin-top: 10px;" onsubmit="saveBypassOffReport(event)">
+              <div class="form-group">
+                <label>Kategori Troubleshoot</label>
+                <select id="bypassReason" required>
+                  <option value="Kendala Power / Solar Cell / Baterai Drop">Kendala Power / Solar Cell / Baterai Drop</option>
+                  <option value="Gangguan Jaringan / Router Modem Down">Gangguan Jaringan / Router Modem Down</option>
+                  <option value="Kerusakan Sensor / Digitizer">Kerusakan Sensor / Digitizer</option>
+                  <option value="Faktor Cuaca Buruk / Tersambar Petir">Faktor Cuaca Buruk / Tersambar Petir</option>
+                  <option value="Lokasi Tidak Terjangkau / Bencana Alam">Lokasi Tidak Terjangkau / Bencana Alam</option>
+                  <option value="Penyebab Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Rincian Troubleshoot</label><textarea id="bypassNotes" rows="2" required></textarea></div>
+              <button type="submit" class="btn-bypass-off"><i class="fa-solid fa-bolt"></i> Bypass Status Into OFF</button>
+            </form>
+          </details>
+
+          <details style="margin-top: 10px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;">
+            <summary style="font-size: 11px; font-weight: 700; cursor: pointer; color: var(--accent-neon);"><i class="fa-solid fa-pen-to-square"></i> Input Maintenance Log Normal</summary>
+            <form style="margin-top: 10px;" onsubmit="saveReportToDatabase(event)">
+              <div class="form-group"><label>Status Perangkat</label><select id="formStatus"><option value="ON">ON (OPERASIONAL NORMAL)</option><option value="OFF">OFF (BERMASALAH)</option></select></div>
+              <div class="form-group"><label>Tanggal Kunjungan</label><input type="date" id="formDate" required></div>
+              <div class="form-group"><label>Kegiatan Pemeliharaan</label><input type="text" id="formActivity" required></div>
+              <div class="form-group"><label>Catatan Teknisi</label><textarea id="formNotes" rows="2"></textarea></div>
+              <div class="form-group"><label>Rekomendasi</label><textarea id="formRecs" rows="2"></textarea></div>
+              <div class="form-group"><label>Upload Foto</label><input type="file" id="formPhoto" accept="image/*" multiple></div>
+              <button type="submit" class="btn-submit"><i class="fa-solid fa-cloud-arrow-up"></i> Commit Data Ke Database</button>
+            </form>
+          </details>
+
+          <a id="panelNav" href="#" target="_blank" class="btn-direction"><i class="fa-solid fa-route"></i> Navigasi Rute Google Maps</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // --- DATA ALOPTAMA ---
-    const dataSeismograph = [
-      { id: "DDSI", lat: 1.603648, lng: 101.39128 },
-      { id: "LASI", lat: 4.457253, lng: 97.970444 },
-      { id: "LDSI", lat: 2.886174, lng: 98.15713 },
-      { id: "MUTSI", lat: 2.300000, lng: 98.965000 },
-      { id: "ONSM", lat: 2.159800, lng: 98.630000 },
-      { id: "PLSM", lat: 1.057600, lng: 99.775900 },
-      { id: "PMTSI", lat: 2.522983, lng: 99.261673 },
-      { id: "PSI", lat: 2.695200, lng: 98.924000 },
-      { id: "PTSM", lat: 2.011800, lng: 99.166000 },
-      { id: "RLSI", lat: 2.068600, lng: 99.855300 },
-      { id: "RSSM", lat: 2.598100, lng: 98.783200 },
-      { id: "SBSI", lat: 1.398760, lng: 99.430900 },
-      { id: "RSMSI", lat: 2.959140, lng: 98.861100 },
-      { id: "TKSM", lat: 3.137400, lng: 98.324400 },
-      { id: "TPRI", lat: 0.919300, lng: 104.520000 },
-      { id: "TRSI", lat: 2.025560, lng: 98.959500 },
-      { id: "TSI", lat: 3.501200, lng: 98.564500 }
-    ];
+    const SUPABASE_URL = "https://sazdesulrndmyluqiyie.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_s2uJAXTsqj1JkVRZrBHFFA_3KsyTEEC";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const dataWRSNG = [
-      { nama: "WRS Kantor Bupati Humbang Hasundutan", lat: 2.250267, lng: 98.7904565 },
-      { nama: "WRS Kantor Bupati Samosir", lat: 2.5598552, lng: 98.7223861 },
-      { nama: "WRS Kantor Bupati Dairi", lat: 2.7479516, lng: 98.3139663 },
-      { nama: "WRS Kantor Bupati Karo", lat: 3.1106594, lng: 98.5013393 },
-      { nama: "WRS Kantor Bupati Tapanuli Utara", lat: 2.0217974, lng: 98.9617002 },
-      { nama: "WRS Kantor Bupati Tapanuli Selatan", lat: 1.5178467, lng: 99.3011757 },
-      { nama: "WRS Kantor Bupati Padang Lawas", lat: 1.0555997, lng: 99.7755672 },
-      { nama: "WRS Kantor Bupati Labuhan Batu", lat: 2.0700841, lng: 99.857156 },
-      { nama: "WRS Kantor BPBD Asahan", lat: 2.9814424, lng: 99.610221 },
-      { nama: "WRS Stasiun Geofisika Deli Serdang", lat: 3.5006028, lng: 98.5655297 },
-      { nama: "WRS Balai BMKG Wilayah I Medan", lat: 3.539705, lng: 98.6370872 },
-      { nama: "WRS Pos SAR Parapat (Danau Toba)", lat: 2.6598046, lng: 98.9338025 },
-      { nama: "WRS Kantor BPBD Provinsi Sumut", lat: 3.5999634, lng: 98.595761 },
-      { nama: "WRS Kantor BPBD Tapanuli Tengah", lat: 1.6838945, lng: 98.8226437 },
-      { nama: "WRS Kantor BPBD Pakpak Bharat", lat: 2.5401444, lng: 98.3214969 },
-      { nama: "WRS Kantor BPBD Tapanuli Selatan", lat: 1.5159843, lng: 99.3000479 },
-      { nama: "WRS Kantor BPBD Mandailing Natal", lat: 0.8225003, lng: 99.566365 },
-      { nama: "WRS Kantor BPBD Sibolga", lat: 1.7401126, lng: 98.7757011 },
-      { nama: "WRS Kantor BPBD Siantar", lat: 2.9517328, lng: 99.063362 },
-      { nama: "WRS Kantor BPBD Simalungun", lat: 2.9614397, lng: 98.842142 }
-    ];
+    let map, activeStation = null, allMarkers = [];
+    let groups = {};
+    const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
-    const dataAccelerograph = [
-      { id: "AUSN", lat: 3.26, lng: 98.53 },
-      { id: "BUSN", lat: 3.59, lng: 98.51 },
-      { id: "KNSN", lat: 3.60, lng: 98.86 },
-      { id: "KUSN", lat: 3.12, lng: 98.51 },
-      { id: "MEBA", lat: 3.79, lng: 98.71 },
-      { id: "MEBW", lat: 3.54, lng: 98.67 },
-      { id: "MEPA", lat: 2.70, lng: 98.92 },
-      { id: "MESA", lat: 3.62, lng: 98.71 },
-      { id: "PSSN", lat: 1.55, lng: 98.90 },
-      { id: "PTSR", lat: 1.55, lng: 98.90 },
-      { id: "PUSN", lat: 2.95, lng: 99.06 },
-      { id: "SUSN", lat: 1.41, lng: 99.28 }
-    ];
-
-    const dataIntensitymeter = [
-      { id: "NBMUS", lat: 3.54, lng: 98.64 },
-      { id: "NKSUS", lat: 3.62, lng: 98.71 }
-    ];
-
-    // --- MENGISI JUMLAH TOTAL PADA CARD ---
-    document.getElementById('count-seismo').innerText = `${dataSeismograph.length} Lokasi`;
-    document.getElementById('count-wrsng').innerText  = `${dataWRSNG.length} Lokasi`;
-    document.getElementById('count-accel').innerText  = `${dataAccelerograph.length} Lokasi`;
-    document.getElementById('count-inten').innerText  = `${dataIntensitymeter.length} Lokasi`;
-
-    // --- INISIALISASI PETA LEAFLET ---
-    const map = L.map('map').setView([2.5, 99.2], 7);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    // Marker Icon Custom
-    const blueIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-
-    const redIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-
-    const greenIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-
-    const goldIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-
-    // Layer Groups
-    const seismographGroup = L.layerGroup().addTo(map);
-    const wrsngGroup = L.layerGroup().addTo(map);
-    const accelerographGroup = L.layerGroup().addTo(map);
-    const intensitymeterGroup = L.layerGroup().addTo(map);
-
-    // Plotting Markers
-    dataSeismograph.forEach(item => {
-      L.marker([item.lat, item.lng], { icon: blueIcon })
-        .bindPopup(`<b>Seismograph InaTEWS</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
-        .addTo(seismographGroup);
-    });
-
-    dataWRSNG.forEach(item => {
-      L.marker([item.lat, item.lng], { icon: redIcon })
-        .bindPopup(`<b>WRSNG</b><br>${item.nama}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
-        .addTo(wrsngGroup);
-    });
-
-    dataAccelerograph.forEach(item => {
-      L.marker([item.lat, item.lng], { icon: greenIcon })
-        .bindPopup(`<b>Accelerograph</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
-        .addTo(accelerographGroup);
-    });
-
-    dataIntensitymeter.forEach(item => {
-      L.marker([item.lat, item.lng], { icon: goldIcon })
-        .bindPopup(`<b>Intensitymeter</b><br>Kode: ${item.id}<br>Lat: ${item.lat}, Lng: ${item.lng}`)
-        .addTo(intensitymeterGroup);
-    });
-
-    // Layer Control
-    const overlayMaps = {
-      '<span class="badge badge-blue"></span> Seismograph': seismographGroup,
-      '<span class="badge badge-red"></span> WRSNG': wrsngGroup,
-      '<span class="badge badge-green"></span> Accelerograph': accelerographGroup,
-      '<span class="badge badge-gold"></span> Intensitymeter': intensitymeterGroup
-    };
-
-    L.control.layers(null, overlayMaps, { collapsed: true }).addTo(map);
-
-    // --- FITUR KEAMANAN / ANTI INSPECT ELEMENT ---
-    document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
-        (e.ctrlKey && (e.key === "U" || e.key === "u" || e.key === "S" || e.key === "s"))
-      ) {
-        e.preventDefault();
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        initMap(); loadStationsFromDatabase();
       }
     });
-  </script>
 
+    async function handleLogin(e) {
+      e.preventDefault();
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value
+      });
+      if (error) alert("Login Gagal: " + error.message);
+      else location.reload();
+    }
+
+    async function handleLogout() { await supabaseClient.auth.signOut(); location.reload(); }
+
+    function initMap() {
+      const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      map = L.map('map', { center: [2.5, 99.2], zoom: 7, layers: [osm], zoomControl: false });
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      Object.keys(catMap).forEach(k => { groups[k] = L.layerGroup().addTo(map); });
+      groups['off'] = L.layerGroup();
+    }
+
+    async function loadStationsFromDatabase() {
+      let { data: stasiun } = await supabaseClient.from('stasiun').select('*');
+      let { data: viewStats } = await supabaseClient.from('v_statistik_aloptama').select('*');
+      if (!stasiun) return;
+
+      allMarkers = [];
+      Object.keys(groups).forEach(k => groups[k].clearLayers());
+
+      let counts = { total: stasiun.length, up: 0, down: 0 };
+
+      stasiun.forEach(item => {
+        const isUp = item.status !== 'OFF';
+        if (isUp) counts.up++; else counts.down++;
+
+        const iconHtml = {
+          seismo: '<div class="marker-triangle"></div>',
+          wrsng: '<div class="marker-computer"><i class="fa-solid fa-desktop"></i></div>',
+          accel: '<div class="marker-circle"></div>',
+          inten: '<div class="marker-star"><i class="fa-solid fa-star"></i></div>',
+          tsunami: '<div class="marker-anchor"><i class="fa-solid fa-anchor"></i></div>',
+          lightning: '<div class="marker-bolt"><i class="fa-solid fa-bolt"></i></div>',
+          magneto: '<div class="marker-box"><i class="fa-solid fa-cube"></i></div>'
+        }[item.kategori] || '';
+
+        const icon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [26, 26] });
+        const marker = L.marker([item.lat, item.lng], { icon }).on('click', () => { activeStation = item; openDetailPanel(item); map.flyTo([item.lat, item.lng], 13); });
+
+        if (groups[item.kategori]) marker.addTo(groups[item.kategori]);
+        if (!isUp) marker.addTo(groups['off']);
+        allMarkers.push({ title: item.nama.toLowerCase(), marker, data: item, group: groups[item.kategori] });
+      });
+
+      // Update Top Stats Grid & Floating Box
+      document.getElementById('count-total').innerText = counts.total;
+      document.getElementById('tbl-total').innerText = counts.total;
+      document.getElementById('tbl-up').innerText = counts.up;
+      document.getElementById('tbl-down').innerText = counts.down;
+      document.getElementById('tbl-priority-total').innerText = `${counts.down} SITE`;
+      document.getElementById('tbl-percent').innerText = `${((counts.up / counts.total) * 100).toFixed(1)}%`;
+
+      // Render Detail Rows from View / Local Fallback
+      const tbody = document.getElementById('tbl-detail-rows');
+      tbody.innerHTML = '';
+      Object.keys(catMap).forEach(k => {
+        const catName = catMap[k];
+        const stat = (viewStats || []).find(v => v.kategori === k) || { total: 0, up: 0, down: 0, prio: 0, active_pct: 0 };
+        document.getElementById(`count-${k}`).innerText = stat.total || 0;
+        tbody.innerHTML += `<tr><td>${catName}</td><td>${stat.total||0}</td><td style="color:#34d399">${stat.up||0}</td><td style="color:#fca5a5">${stat.down||0}</td><td style="color:#fca5a5">${stat.prio||0}</td><td style="color:var(--accent-neon)">${stat.active_pct||0}%</td></tr>`;
+      });
+    }
+
+    function openDetailPanel(item) {
+      document.getElementById('panelTitle').innerText = item.nama;
+      document.getElementById('panelCategory').innerText = item.kategori.toUpperCase();
+      document.getElementById('panelCoords').innerText = `${item.lat}, ${item.lng}`;
+      document.getElementById('panelNav').href = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
+      
+      const badge = document.getElementById('panelStatusBadge');
+      badge.innerText = item.status || 'ON';
+      badge.className = `status-badge ${item.status === 'OFF' ? 'badge-off' : 'badge-on'}`;
+
+      document.getElementById('valLastVisit').innerText = item.kunjungan_terakhir || 'Belum ada record';
+      document.getElementById('valActivity').innerText = item.kegiatan || '-';
+      document.getElementById('valNotes').innerText = item.catatan || '-';
+      document.getElementById('valRecs').innerText = item.rekomendasi || '-';
+
+      const offBox = document.getElementById('offReportSection');
+      if (item.status === 'OFF' && item.tgl_laporan_mati) {
+        document.getElementById('valOffDate').innerText = item.tgl_laporan_mati;
+        document.getElementById('valOffReason').innerText = item.penyebab_mati || '-';
+        document.getElementById('valOffNotes').innerText = item.troubleshoot_mati || '-';
+        offBox.style.display = 'block';
+      } else offBox.style.display = 'none';
+
+      document.getElementById('detailPanel').style.display = 'block';
+    }
+
+    async function saveBypassOffReport(e) {
+      e.preventDefault();
+      if (!activeStation) return;
+      const updatedData = { status: 'OFF', penyebab_mati: document.getElementById('bypassReason').value, troubleshoot_mati: document.getElementById('bypassNotes').value };
+      await supabaseClient.from('stasiun').update(updatedData).eq('id', activeStation.id);
+      alert("⚠️ LAPORAN ALAT MATI TERSIMPAN!");
+      loadStationsFromDatabase(); closePanel();
+    }
+
+    async function saveReportToDatabase(e) {
+      e.preventDefault();
+      if (!activeStation) return;
+      const updatedData = { status: document.getElementById('formStatus').value, kunjungan_terakhir: document.getElementById('formDate').value, kegiatan: document.getElementById('formActivity').value, catatan: document.getElementById('formNotes').value, rekomendasi: document.getElementById('formRecs').value };
+      await supabaseClient.from('stasiun').update(updatedData).eq('id', activeStation.id);
+      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
+      loadStationsFromDatabase(); closePanel();
+    }
+
+    function filterByPriority() {
+      hideAllLayers(); map.addLayer(groups['off']); closePanel();
+      const offM = allMarkers.filter(m => m.data.status === 'OFF');
+      if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [50, 50] });
+    }
+
+    function hideAllLayers() { Object.keys(groups).forEach(k => map.removeLayer(groups[k])); }
+    function resetFilter() { hideAllLayers(); Object.keys(catMap).forEach(k => map.addLayer(groups[k])); map.setView([2.5, 99.2], 7); closePanel(); }
+    function toggleLayerFilter(type) { hideAllLayers(); if (groups[type]) map.addLayer(groups[type]); closePanel(); }
+    function closePanel() { document.getElementById('detailPanel').style.display = 'none'; activeStation = null; }
+    function toggleStatsBox() { const b = document.getElementById('statsBoxBody'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; }
+  </script>
 </body>
 </html>
