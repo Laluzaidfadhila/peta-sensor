@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Monitoring Aloptama Stasiun</title>
 
-  <!-- Google Fonts & Font Awesome Icons -->
+  <!-- Google Fonts & Font Icons -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -88,7 +88,7 @@
     }
     .btn-action:hover { border-color: var(--accent-neon); color: var(--accent-neon); }
 
-    /* STATS TACTICAL GRID RESPONSIVE */
+    /* STATS GRID */
     .stats-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 12px; }
     .stat-card { 
       background: var(--panel-bg); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border-color); 
@@ -170,9 +170,7 @@
     .btn-bypass-off { width: 100%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
     .btn-direction { display: block; width: 100%; text-align: center; background: #0f172a; border: 1px solid var(--accent-neon); color: var(--accent-neon); padding: 10px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 700; margin-top: 8px; }
 
-    /* ============================================================
-       BREAKPOINT KHUSUS UNTUK HP / SMARTHONE
-       ============================================================ */
+    /* BREAKPOINT KHUSUS UNTUK HP */
     @media (max-width: 1200px) { 
       .stats-grid { grid-template-columns: repeat(4, 1fr); } 
     }
