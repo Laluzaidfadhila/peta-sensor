@@ -295,7 +295,7 @@
     </div>
   </div>
 
-  <!-- MODAL RANCANGAN EKSPEDISI DENGAN CHECKBOX ELIMINASI SITE -->
+  <!-- MODAL RANCANGAN EKSPEDISI DENGAN INPUT MANUAL SITE SIKAP -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
@@ -321,6 +321,15 @@
             </select>
           </div>
 
+          <!-- INPUT MANUAL SITE TAMBAHAN DILUAR KORIDOR -->
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold text-info"><i class="fa-solid fa-plus-circle me-1"></i> Tambah Site Kunjungan Manual (Opsional)</label>
+            <div class="input-group input-group-sm">
+              <select id="selectManualSite" class="form-select bg-panel border-secondary text-white"></select>
+              <button class="btn btn-outline-info fw-bold" type="button" onclick="addManualSiteToRoute()">+ Sisipkan</button>
+            </div>
+          </div>
+
           <div id="expeditionResultBox" class="card bg-panel border-secondary p-3" style="display: none;">
             <h6 class="fw-bold text-warning border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-calculator me-1"></i> ANALISIS RUTE EKSPEDISI:</h6>
             <div class="mb-1 small">Stasiun Disinggahi: <strong id="resSiteCount" class="text-info">0 Site</strong></div>
@@ -328,7 +337,7 @@
             <div class="mb-2 small">Estimasi Waktu Perjalanan Total: <strong id="resEstimDays" class="text-warning mono fs-6">0 Hari</strong></div>
             <small class="text-muted d-block mb-2" style="font-size: 10px;">*Catatan: Stasiun TSI (Kantor) otomatis dikecualikan. Hapus centang jika tidak ingin mengunjungi site tersebut.</small>
             
-            <label class="form-label text-muted small fw-bold mt-1">Hapus Centang Untuk Eliminasi Site:</label>
+            <label class="form-label text-muted small fw-bold mt-1">Daftar Singgah & Eliminasi Manual:</label>
             <div id="resSiteList" class="list-group list-group-flush mb-3 small" style="max-height: 180px; overflow-y: auto;"></div>
 
             <button class="btn btn-info btn-sm w-100 fw-bold text-dark" onclick="openExpeditionGoogleMaps()"><i class="fa-solid fa-diamond-turn-right me-1"></i> Buka Rute Google Maps</button>
@@ -372,7 +381,7 @@
     let rawStationData = [], allMarkers = [], groups = {};
     let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null;
     let expeditionGoogleMapsUrl = "";
-    let currentCorridorSites = []; // Menyimpan daftar stasiun dalam koridor untuk di-filter
+    let currentCorridorSites = []; 
 
     const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
@@ -430,15 +439,17 @@
 
       let counts = { total: stasiun.length, up: 0, down: 0 };
       const selectDest = document.getElementById('selectDestinationSite');
+      const selectManual = document.getElementById('selectManualSite');
       selectDest.innerHTML = '<option value="">-- Pilih Stasiun Tujuan --</option>';
+      selectManual.innerHTML = '<option value="">-- Pilih Site Untuk Disisipkan --</option>';
 
       stasiun.forEach(item => {
         const isUp = item.status !== 'OFF';
         if (isUp) counts.up++; else counts.down++;
 
-        // PENGECUALIAN TSI DARI OPSIONAL PILIHAN EKSPEDISI MENGINAP
         if (item.id.toUpperCase() !== 'TSI' && item.id.toUpperCase() !== 'LD_TSI') {
           selectDest.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
+          selectManual.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
         }
 
         const iconHtml = {
@@ -478,9 +489,7 @@
       });
     }
 
-    // FITUR RUTE MULTI-SITE UNTUK SELURUH STASIUN MATI (OFF)
     function planMultiSiteRoute() {
-      // PENGECUALIAN TSI PADA LOGIKA UTAMA
       const offSites = allMarkers.filter(m => m.data.status === 'OFF' && m.data.id.toUpperCase() !== 'TSI' && m.data.id.toUpperCase() !== 'LD_TSI').map(m => m.data);
       if (offSites.length === 0) {
         alert("✅ Tidak ada stasiun luar yang bermasalah (OFF). Seluruh sistem berjalan normal!");
@@ -514,7 +523,6 @@
       window.open(googleMapsUrl, '_blank');
     }
 
-    // CALCULATE KALKULASI RUTE EKSPEDISI DENGAN CHECKBOX ELIMINASI & PENGECUALIAN TSI
     function calculateExpeditionRoute() {
       const destId = document.getElementById('selectDestinationSite').value;
       const radiusKm = parseFloat(document.getElementById('selectCorridorRadius').value);
@@ -536,7 +544,6 @@
 
       currentCorridorSites = [];
       rawStationData.forEach(site => {
-        // PENGECUALIAN STASIUN TSI DAN DESTINASI DARI DAFTAR LINTASAN
         if (site.id === destSite.id || site.id.toUpperCase() === 'TSI' || site.id.toUpperCase() === 'LD_TSI') return;
         
         let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, site.lat, site.lng);
@@ -544,7 +551,7 @@
         let directDist = getHaversineDistance(userCoords.lat, userCoords.lng, destSite.lat, destSite.lng);
 
         if ((distFromStart + distToDest - directDist) <= (radiusKm / 3)) {
-          currentCorridorSites.push({ ...site, distFromStart, selected: true });
+          currentCorridorSites.push({ ...site, distFromStart, selected: true, manual: false });
         }
       });
 
@@ -553,10 +560,35 @@
       resBox.style.display = 'block';
     }
 
-    // RENDER ULANG HASIL EKSPEDISI SAAT ADA SITE DITERIMA ATAU DI-ELIMINASI
+    // FUNGSI INPUT MANUAL SITE TAMBAHAN DILUAR KORIDOR OTOMATIS
+    function addManualSiteToRoute() {
+      const manualId = document.getElementById('selectManualSite').value;
+      const destId = document.getElementById('selectDestinationSite').value;
+
+      if (!destId) { alert("📍 Silakan pilih Stasiun Akhir Tujuan Utama terlebih dahulu."); return; }
+      if (!manualId) { alert("📍 Silakan pilih site yang ingin disisipkan."); return; }
+      if (manualId === destId) { alert("⚠️ Site ini sudah dipilih sebagai Tujuan Utama."); return; }
+
+      const exists = currentCorridorSites.find(s => s.id === manualId);
+      if (exists) {
+        exists.selected = true; // Aktifkan jika sebelumnya di-uncheck
+      } else {
+        const siteData = rawStationData.find(s => s.id === manualId);
+        if (siteData) {
+          let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, siteData.lat, siteData.lng);
+          currentCorridorSites.push({ ...siteData, distFromStart, selected: true, manual: true });
+          currentCorridorSites.sort((a, b) => a.distFromStart - b.distFromStart);
+        }
+      }
+
+      const destSite = rawStationData.find(s => s.id === destId);
+      renderExpeditionResults(destSite);
+      document.getElementById('selectManualSite').value = "";
+    }
+
     function renderExpeditionResults(destSite) {
       const activeCorridorSites = currentCorridorSites.filter(s => s.selected);
-      const totalVisitedSites = activeCorridorSites.length + 1; // Termasuk site tujuan akhir
+      const totalVisitedSites = activeCorridorSites.length + 1; 
 
       let totalDistKm = 0;
       let currLat = userCoords.lat, currLng = userCoords.lng;
@@ -566,7 +598,6 @@
       });
       totalDistKm += getHaversineDistance(currLat, currLng, destSite.lat, destSite.lng);
 
-      // ESTIMASI WAKTU: 1 Site = 1 Hari Maintenance
       let travelDays = Math.ceil(totalDistKm / 200);
       let totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
 
@@ -576,12 +607,12 @@
 
       const listEl = document.getElementById('resSiteList');
       listEl.innerHTML = '';
-      currentCorridorSites.forEach((s, idx) => {
+      currentCorridorSites.forEach((s) => {
         listEl.innerHTML += `
           <div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded">
             <div class="form-check m-0">
               <input class="form-check-input" type="checkbox" id="chk_${s.id}" ${s.selected ? 'checked' : ''} onchange="toggleSiteSelection('${s.id}')">
-              <label class="form-check-label small" for="chk_${s.id}">${s.nama}</label>
+              <label class="form-check-label small" for="chk_${s.id}">${s.nama} ${s.manual ? '<span class="text-info">(Sisipan Manual)</span>' : ''}</label>
             </div>
             <span class="badge ${s.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${s.status||'ON'}</span>
           </div>`;
