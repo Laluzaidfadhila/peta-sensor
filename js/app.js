@@ -376,7 +376,7 @@ function toggleStatsBox() {
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL EDITOR DATA ALOPTAMA (PERBAIKAN TAMPILAN NAMA ALAT / SITE / LOKASI)
+// MODUL EDITOR DATA ALOPTAMA (DISESUAIKAN AGAR BEBAS EROR ID)
 // ============================================================
 async function renderAloptamaEditorTable() {
   const tbody = document.getElementById('editorAloptamaBody');
@@ -393,7 +393,6 @@ async function renderAloptamaEditorTable() {
   tbody.innerHTML = '';
 
   items.forEach((item) => {
-    // Memastikan jika nama_alat_site NULL, lokasi akan digunakan secara otomatis
     const displayName = item.nama_alat_site 
       ? (item.lokasi ? `${item.nama_alat_site} (${item.lokasi})` : item.nama_alat_site) 
       : (item.lokasi || '-');
@@ -430,26 +429,43 @@ async function renderAloptamaEditorTable() {
   });
 }
 
+// BATCH UPDATE PER BARIS (MENGHINDARI CONFLICT GENERATED ALWAYS AS IDENTITY)
 async function saveAloptamaBatchUpdates() {
   if (!localAloptamaCache.length) return;
 
-  const updates = localAloptamaCache.map(item => {
-    const newKondisi = document.getElementById(`cond_${item.id}`)?.value || item.kondisi;
-    const newKeterangan = document.getElementById(`ket_${item.id}`)?.value || item.keterangan;
-    return {
-      id: item.id,
-      kondisi: newKondisi,
-      keterangan: newKeterangan
-    };
-  });
+  const btnSave = document.querySelector("#edit-pane button");
+  if (btnSave) {
+    btnSave.disabled = true;
+    btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Menyimpan...';
+  }
 
-  const { error } = await supabaseClient.from('data_aloptama').upsert(updates, { onConflict: 'id' });
+  try {
+    for (const item of localAloptamaCache) {
+      const newKondisi = document.getElementById(`cond_${item.id}`)?.value ?? item.kondisi;
+      const newKeterangan = document.getElementById(`ket_${item.id}`)?.value ?? item.keterangan;
 
-  if (error) {
-    alert("⚠️ Gagal menyimpan perubahan: " + error.message);
-  } else {
+      if (newKondisi !== item.kondisi || newKeterangan !== item.keterangan) {
+        const { error } = await supabaseClient
+          .from('data_aloptama')
+          .update({
+            kondisi: newKondisi,
+            keterangan: newKeterangan
+          })
+          .eq('id', item.id);
+
+        if (error) throw error;
+      }
+    }
+
     alert("✅ Perubahan kondisi dan keterangan aloptama berhasil disimpan ke database!");
     renderAloptamaEditorTable();
+  } catch (err) {
+    alert("⚠️ Gagal menyimpan perubahan: " + err.message);
+  } finally {
+    if (btnSave) {
+      btnSave.disabled = false;
+      btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Simpan Perubahan ke Database';
+    }
   }
 }
 
