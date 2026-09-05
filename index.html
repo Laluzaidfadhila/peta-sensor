@@ -5,19 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Monitoring Aloptama Stasiun - BMKG Deli Serdang</title>
 
+  <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
       --bg-dark: #090d16;
       --panel-bg: #111827;
-      --card-bg: #1f2937;
       --border-color: #374151;
       --accent-neon: #38bdf8;
       --seismo-color: #2563eb;
@@ -39,7 +37,7 @@
     body { background-color: var(--bg-dark); color: #f3f4f6; overflow-x: hidden; }
     .bg-panel { background-color: var(--panel-bg) !important; }
 
-    /* LOGIN SCREEN */
+    /* LOGIN OVERLAY */
     #loginScreen {
       position: fixed; inset: 0;
       background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%);
@@ -63,14 +61,23 @@
     .card-lightning::before { background: var(--lightning-color); }
     .card-magneto::before { background: var(--magneto-color); }
 
-    /* PETA & FLOATING WIDGET */
+    /* PETA & FLOATING WIDGET (FIX EFEK DUA LAPIS) */
     .map-container { position: relative; border-radius: 12px; overflow: hidden; }
     #map { height: 72vh; min-height: 500px; width: 100%; }
 
     .stats-floating-box {
-      position: absolute; top: 14px; left: 14px; z-index: 999; width: 320px; max-width: calc(100% - 28px);
-      background: rgba(17, 24, 39, 0.92); backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      position: absolute; 
+      top: 10px; 
+      left: 10px; 
+      z-index: 999; 
+      width: 310px; 
+      max-width: calc(100% - 20px);
+      background: rgba(17, 24, 39, 0.94); 
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color); 
+      border-radius: 10px; 
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
     }
     .stats-box-header { background: rgba(11, 19, 32, 0.95); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
     .stats-box-body { padding: 12px; font-size: 11px; max-height: 400px; overflow-y: auto; }
@@ -99,7 +106,7 @@
     }
     .doc-img-item:hover { transform: scale(1.03); border-color: var(--accent-neon); }
 
-    /* OFFCANVAS SIDEBAR STYLING */
+    /* OFFCANVAS SIDEBAR RESPONSIVE */
     @media (max-width: 767px) {
       .offcanvas-responsive {
         position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
@@ -114,6 +121,7 @@
 </head>
 <body oncontextmenu="return false;">
 
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen">
     <div class="card bg-panel border-secondary text-white p-4 shadow-lg" style="width: 100%; max-width: 380px; border-radius: 16px;">
       <div class="text-center mb-4">
@@ -135,6 +143,7 @@
     </div>
   </div>
 
+  <!-- DASHBOARD UTAMA -->
   <div id="appScreen" style="display:none;">
     <nav class="navbar navbar-expand bg-panel border-bottom border-secondary px-3 py-2">
       <div class="container-fluid p-0">
@@ -150,6 +159,7 @@
     </nav>
 
     <div class="container-fluid p-2 p-md-3">
+      <!-- CONTROL BAR HARMONIS -->
       <div class="row g-2 mb-2">
         <div class="col-12 col-md">
           <div class="input-group input-group-sm">
@@ -165,6 +175,7 @@
         </div>
       </div>
 
+      <!-- KARTU STATISTIK GRID 8 KOLOM -->
       <div class="row row-cols-2 row-cols-sm-4 row-cols-xl-8 g-2 mb-2">
         <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-all" onclick="resetFilter()"><small class="text-muted fw-bold">TOTAL</small><div class="fs-5 fw-bold mono text-white" id="count-total">0</div></div></div>
         <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><small class="text-muted fw-bold">SEISMO</small><div class="fs-5 fw-bold mono text-white" id="count-seismo">0</div></div></div>
@@ -203,6 +214,7 @@
     </div>
   </div>
 
+  <!-- OFFCANVAS SIDEBAR DETAIL -->
   <div class="offcanvas offcanvas-end offcanvas-responsive bg-panel text-white border-start border-secondary" tabindex="-1" id="detailOffcanvas">
     <div class="offcanvas-header border-bottom border-secondary py-2 px-3">
       <div class="d-flex align-items-center gap-2">
@@ -215,6 +227,7 @@
       <h5 id="panelTitle" class="fw-bold mb-1">Nama Stasiun</h5>
       <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1 text-info"></i> <span id="panelCoords">0, 0</span></p>
 
+      <!-- KARTU LOG KUNJUNGAN FISIK -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-2"></i>LOG KUNJUNGAN TEKNISI</h6>
         <div class="mb-2"><small class="text-info fw-bold d-block">KUNJUNGAN TERAKHIR:</small><span id="valLastVisit" class="mono text-white small">-</span></div>
@@ -228,11 +241,13 @@
         </div>
       </div>
 
+      <!-- KARTU RADIUS STASIUN TERDEKAT -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-compass me-2"></i>RADIUS SITE TERDEKAT</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
+      <!-- KARTU LAPORAN GANGGUAN MATI (OFF) -->
       <div id="offReportSection" class="alert alert-danger bg-danger-subtle border-danger p-3 mb-3" style="display: none;">
         <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>LAPORAN KONDISI MATI (BYPASS)</h6>
         <div class="mb-2"><small class="text-danger fw-bold d-block">TANGGAL LAPOR MATI:</small><span id="valOffDate" class="mono text-white small">-</span></div>
@@ -240,6 +255,7 @@
         <div><small class="text-danger fw-bold d-block">RINCIAN TROUBLESHOOT:</small><span id="valOffNotes" class="text-white small">-</span></div>
       </div>
 
+      <!-- ACCORDION FORM ENTRY DATA -->
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
           <h2 class="accordion-header">
@@ -297,6 +313,7 @@
     </div>
   </div>
 
+  <!-- MODAL RANCANGAN EKSPEDISI -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
@@ -329,6 +346,7 @@
     </div>
   </div>
 
+  <!-- MODAL LIGHTBOX FOTO FULLSCREEN -->
   <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-dark border-secondary">
@@ -338,6 +356,7 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
