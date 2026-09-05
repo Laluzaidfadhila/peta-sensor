@@ -5,73 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Monitoring Aloptama Stasiun - BMKG Deli Serdang</title>
 
-  <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
-  <!-- Supabase Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg-dark: #0a0f1d;
-      --panel-bg: #111827;
-      --border-color: #374151;
-      --accent-neon: #38bdf8;
-      --seismo-color: #2563eb;
-      --wrsng-color: #dc2626;
-      --accel-color: #16a34a;
-      --inten-color: #d97706;
-      --tsunami-color: #0891b2;
-      --lightning-color: #7c3aed;
-      --magneto-color: #0d9488;
+      --bg-dark: #0a0f1d; --panel-bg: #111827; --border-color: #374151; --accent-neon: #38bdf8;
+      --seismo-color: #2563eb; --wrsng-color: #dc2626; --accel-color: #16a34a; --inten-color: #d97706;
+      --tsunami-color: #0891b2; --lightning-color: #7c3aed; --magneto-color: #0d9488;
     }
-
-    * {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-user-select: none; user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    * { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
     .mono { font-family: 'JetBrains Mono', monospace; }
     body { background-color: var(--bg-dark); color: #f3f4f6; overflow-x: hidden; }
-
     .bg-panel { background-color: var(--panel-bg) !important; }
-    
-    /* LOGIN OVERLAY */
-    #loginScreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%);
-      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
-    }
 
-    /* KARTU STATISTIK */
+    #loginScreen { position: fixed; inset: 0; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
     .stat-card { position: relative; overflow: hidden; cursor: pointer; transition: transform 0.15s; }
     .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-neon) !important; }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
     
-    .card-all::before { background: var(--accent-neon); }
-    .card-seismo::before { background: var(--seismo-color); }
-    .card-wrsng::before { background: var(--wrsng-color); }
-    .card-accel::before { background: var(--accel-color); }
-    .card-inten::before { background: var(--inten-color); }
-    .card-tsunami::before { background: var(--tsunami-color); }
-    .card-lightning::before { background: var(--lightning-color); }
-    .card-magneto::before { background: var(--magneto-color); }
+    .card-all::before { background: var(--accent-neon); } .card-seismo::before { background: var(--seismo-color); }
+    .card-wrsng::before { background: var(--wrsng-color); } .card-accel::before { background: var(--accel-color); }
+    .card-inten::before { background: var(--inten-color); } .card-tsunami::before { background: var(--tsunami-color); }
+    .card-lightning::before { background: var(--lightning-color); } .card-magneto::before { background: var(--magneto-color); }
 
-    /* PETA & WIDGET */
     .map-container { position: relative; border-radius: 12px; overflow: hidden; }
     #map { height: 72vh; min-height: 480px; width: 100%; }
-
-    .stats-floating-box {
-      position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; max-width: calc(100% - 24px);
-      background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px);
-      border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    }
+    .stats-floating-box { position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; max-width: calc(100% - 24px); background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
     .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
     .stats-box-body { padding: 10px; font-size: 11px; max-height: 380px; overflow-y: auto; }
 
@@ -79,7 +42,6 @@
     .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.2); }
     .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 5px 4px; border: 1px solid var(--border-color); }
 
-    /* MARKER INSTRUMEN */
     .custom-marker { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
     .marker-triangle { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid var(--seismo-color); filter: drop-shadow(0 0 3px var(--seismo-color)); }
     .marker-computer { background: var(--wrsng-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 6px var(--wrsng-color); }
@@ -88,19 +50,12 @@
     .marker-anchor { background: var(--tsunami-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--tsunami-color); }
     .marker-bolt { background: var(--lightning-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--lightning-color); }
     .marker-box { background: var(--magneto-color); color: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--magneto-color); }
-
     .doc-img-item { width: 100%; height: auto; max-height: 180px; object-fit: cover; border-radius: 6px; cursor: pointer; }
 
     @media (max-width: 767px) {
-      .offcanvas-responsive {
-        position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
-        width: 100% !important; height: 80vh !important; border-top: 1px solid var(--border-color) !important;
-        border-radius: 16px 16px 0 0;
-      }
+      .offcanvas-responsive { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; width: 100% !important; height: 80vh !important; border-top: 1px solid var(--border-color) !important; border-radius: 16px 16px 0 0; }
     }
-    @media (min-width: 768px) {
-      .offcanvas-responsive { width: 400px !important; }
-    }
+    @media (min-width: 768px) { .offcanvas-responsive { width: 400px !important; } }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -114,29 +69,20 @@
         <small class="mono text-muted">STASIUN GEOFISIKA KELAS I DELI SERDANG</small>
       </div>
       <form onsubmit="handleLogin(event)">
-        <div class="mb-3">
-          <label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label>
-          <input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label>
-          <input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required>
-        </div>
+        <div class="mb-3"><label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label><input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required></div>
+        <div class="mb-3"><label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label><input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required></div>
         <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase py-2"><i class="fa-solid fa-shield-halved me-1"></i> Autentikasi Masuk</button>
       </form>
     </div>
   </div>
 
   <!-- DASHBOARD UTAMA -->
-  <div id="appScreen">
+  <div id="appScreen" style="display:none;">
     <nav class="navbar navbar-expand bg-panel border-bottom border-secondary px-3">
       <div class="container-fluid p-0">
         <div class="d-flex align-items-center gap-2">
           <i class="fa-solid fa-tower-observation text-info fs-4"></i>
-          <div>
-            <h6 class="fw-bold text-white mb-0">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6>
-            <small class="mono text-info d-block" style="font-size: 10px;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small>
-          </div>
+          <div><h6 class="fw-bold text-white mb-0">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6><small class="mono text-info d-block" style="font-size: 10px;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small></div>
         </div>
         <button class="btn btn-outline-danger btn-sm fw-bold" onclick="handleLogout()"><i class="fa-solid fa-power-off me-1"></i> KELUAR</button>
       </div>
@@ -144,12 +90,7 @@
 
     <div class="container-fluid p-2 p-md-3">
       <div class="row g-2 mb-2">
-        <div class="col-12 col-md">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span>
-            <input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
-          </div>
-        </div>
+        <div class="col-12 col-md"><div class="input-group input-group-sm"><span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span><input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID..." onkeyup="searchStation()"></div></div>
         <div class="col-auto d-flex gap-1 flex-wrap">
           <button class="btn btn-sm btn-outline-info fw-semibold" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya</button>
           <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="planMultiSiteRoute()"><i class="fa-solid fa-route me-1"></i> Multi-Site (OFF)</button>
@@ -172,26 +113,13 @@
 
       <div class="map-container border border-secondary">
         <div class="stats-floating-box">
-          <div class="stats-box-header">
-            <span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span>
-            <i id="statsToggleIcon" class="fa-solid fa-chevron-up text-muted" style="cursor:pointer;" onclick="toggleStatsBox()"></i>
-          </div>
+          <div class="stats-box-header"><span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span><i id="statsToggleIcon" class="fa-solid fa-chevron-up text-muted" style="cursor:pointer;" onclick="toggleStatsBox()"></i></div>
           <div id="statsBoxBody" class="stats-box-body">
-            <table class="stats-summary-table mono">
-              <thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead>
-              <tbody><tr><td id="tbl-total">0</td><td id="tbl-up" class="text-success">0</td><td id="tbl-down" class="text-danger">0</td><td id="tbl-percent" class="text-info">0%</td></tr></tbody>
-            </table>
-            <div class="alert alert-danger p-2 mb-2 mono fw-bold d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="filterByPriority()">
-              <span class="small"><i class="fa-solid fa-triangle-exclamation me-1"></i> PRIORITAS KUNJUNGAN (OFF)</span>
-              <span id="tbl-priority-total" class="badge bg-danger">0 SITE</span>
-            </div>
-            <table class="stats-detail-table mono">
-              <thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead>
-              <tbody id="tbl-detail-rows"></tbody>
-            </table>
+            <table class="stats-summary-table mono"><thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead><tbody><tr><td id="tbl-total">0</td><td id="tbl-up" class="text-success">0</td><td id="tbl-down" class="text-danger">0</td><td id="tbl-percent" class="text-info">0%</td></tr></tbody></table>
+            <div class="alert alert-danger p-2 mb-2 mono fw-bold d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="filterByPriority()"><span class="small"><i class="fa-solid fa-triangle-exclamation me-1"></i> PRIORITAS KUNJUNGAN (OFF)</span><span id="tbl-priority-total" class="badge bg-danger">0 SITE</span></div>
+            <table class="stats-detail-table mono"><thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead><tbody id="tbl-detail-rows"></tbody></table>
           </div>
         </div>
-
         <div id="map"></div>
       </div>
     </div>
@@ -200,10 +128,7 @@
   <!-- OFFCANVAS DETAIL STASIUN -->
   <div class="offcanvas offcanvas-end offcanvas-responsive bg-panel text-white border-start border-secondary" tabindex="-1" id="detailOffcanvas">
     <div class="offcanvas-header border-bottom border-secondary py-2 px-3">
-      <div class="d-flex align-items-center gap-2">
-        <span id="panelCategory" class="badge bg-info text-dark fw-bold mono">KATEGORI</span>
-        <span id="panelStatusBadge" class="badge bg-success fw-bold">ON</span>
-      </div>
+      <div class="d-flex align-items-center gap-2"><span id="panelCategory" class="badge bg-info text-dark fw-bold mono">KATEGORI</span><span id="panelStatusBadge" class="badge bg-success fw-bold">ON</span></div>
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-3">
@@ -216,15 +141,11 @@
         <div class="mb-2"><small class="text-info fw-bold d-block">KEGIATAN DILAKUKAN:</small><span id="valActivity" class="text-white small">-</span></div>
         <div class="mb-2"><small class="text-info fw-bold d-block">CATATAN PEMELIHARAAN:</small><span id="valNotes" class="text-white small">-</span></div>
         <div class="mb-2"><small class="text-info fw-bold d-block">REKOMENDASI LANJUTAN:</small><span id="valRecs" class="text-white small">-</span></div>
-        <div>
-          <small class="text-info fw-bold d-block mb-1">DOKUMENTASI LAPANGAN (KLIK FOTO):</small>
-          <div id="docGallery" class="d-flex flex-column gap-2"></div>
-          <small id="noImgText" class="text-muted italic">Tidak ada berkas foto</small>
-        </div>
+        <div><small class="text-info fw-bold d-block mb-1">DOKUMENTASI LAPANGAN:</small><div id="docGallery" class="d-flex flex-column gap-2"></div><small id="noImgText" class="text-muted italic">Tidak ada berkas foto</small></div>
       </div>
 
       <div class="card bg-dark border-info p-3 mb-3">
-        <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-compass me-1"></i> SITE LAIN DALAM RADIUS TERDEKAT:</h6>
+        <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-compass me-1"></i> RADIUS SITE TERDEKAT:</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
@@ -237,16 +158,11 @@
 
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed bg-danger-subtle text-danger fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBypass">
-              <i class="fa-solid fa-triangle-exclamation me-2"></i> Bypass Laporkan Alat Mati (Urgent)
-            </button>
-          </h2>
+          <h2 class="accordion-header"><button class="accordion-button collapsed bg-danger-subtle text-danger fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBypass"><i class="fa-solid fa-triangle-exclamation me-2"></i> Bypass Laporkan Alat Mati (Urgent)</button></h2>
           <div id="collapseBypass" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
             <div class="accordion-body bg-dark text-white p-3">
               <form onsubmit="saveBypassOffReport(event)">
-                <div class="mb-2">
-                  <label class="form-label text-muted small fw-bold">Kategori Troubleshoot</label>
+                <div class="mb-2"><label class="form-label text-muted small fw-bold">Kategori Troubleshoot</label>
                   <select id="bypassReason" class="form-select form-select-sm bg-panel border-secondary text-white" required>
                     <option value="Kendala Power / Solar Cell / Baterai Drop">Kendala Power / Solar Cell / Baterai Drop</option>
                     <option value="Gangguan Jaringan / Router Modem Down">Gangguan Jaringan / Router Modem Down</option>
@@ -256,10 +172,7 @@
                     <option value="Penyebab Lainnya">Lainnya</option>
                   </select>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label text-muted small fw-bold">Rincian Troubleshoot</label>
-                  <textarea id="bypassNotes" class="form-control form-control-sm bg-panel border-secondary text-white" rows="2" required></textarea>
-                </div>
+                <div class="mb-3"><label class="form-label text-muted small fw-bold">Rincian Troubleshoot</label><textarea id="bypassNotes" class="form-control form-control-sm bg-panel border-secondary text-white" rows="2" required></textarea></div>
                 <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold text-uppercase"><i class="fa-solid fa-bolt me-1"></i> Bypass Status Into OFF</button>
               </form>
             </div>
@@ -267,18 +180,11 @@
         </div>
 
         <div class="accordion-item bg-dark border-secondary mt-2">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed bg-panel text-info fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLog">
-              <i class="fa-solid fa-pen-to-square me-2"></i> Input Maintenance Log Normal
-            </button>
-          </h2>
+          <h2 class="accordion-header"><button class="accordion-button collapsed bg-panel text-info fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLog"><i class="fa-solid fa-pen-to-square me-2"></i> Input Maintenance Log Normal</button></h2>
           <div id="collapseLog" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
             <div class="accordion-body bg-dark text-white p-3">
               <form onsubmit="saveReportToDatabase(event)">
-                <div class="mb-2">
-                  <label class="form-label text-muted small fw-bold">Status Perangkat</label>
-                  <select id="formStatus" class="form-select form-select-sm bg-panel border-secondary text-white"><option value="ON">ON (OPERASIONAL NORMAL)</option><option value="OFF">OFF (BERMASALAH)</option></select>
-                </div>
+                <div class="mb-2"><label class="form-label text-muted small fw-bold">Status Perangkat</label><select id="formStatus" class="form-select form-select-sm bg-panel border-secondary text-white"><option value="ON">ON (OPERASIONAL NORMAL)</option><option value="OFF">OFF (BERMASALAH)</option></select></div>
                 <div class="mb-2"><label class="form-label text-muted small fw-bold">Tanggal Kunjungan</label><input type="date" id="formDate" class="form-control form-control-sm bg-panel border-secondary text-white" required></div>
                 <div class="mb-2"><label class="form-label text-muted small fw-bold">Kegiatan Pemeliharaan</label><input type="text" id="formActivity" class="form-control form-control-sm bg-panel border-secondary text-white" required></div>
                 <div class="mb-2"><label class="form-label text-muted small fw-bold">Catatan Teknisi</label><textarea id="formNotes" class="form-control form-control-sm bg-panel border-secondary text-white" rows="2"></textarea></div>
@@ -290,56 +196,36 @@
           </div>
         </div>
       </div>
-
       <a id="panelNav" href="#" target="_blank" class="btn btn-outline-info w-100 fw-bold"><i class="fa-solid fa-route me-1"></i> Navigasi Single Site</a>
     </div>
   </div>
 
-  <!-- MODAL RANCANGAN EKSPEDISI DENGAN INPUT MANUAL SITE SIKAP -->
+  <!-- MODAL RANCANGAN EKSPEDISI -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
-        <div class="modal-header border-secondary py-2 px-3">
-          <h6 class="modal-title text-info fw-bold"><i class="fa-solid fa-map-location-dot me-1"></i> Rencana Ekspedisi Kunjungan Site</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
+        <div class="modal-header border-secondary py-2 px-3"><h6 class="modal-title text-info fw-bold"><i class="fa-solid fa-map-location-dot me-1"></i> Rencana Ekspedisi Kunjungan Site</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
         <div class="modal-body p-3">
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold">1. Titik Awal Keberangkatan</label>
-            <input type="text" class="form-control form-control-sm bg-panel border-secondary text-info fw-bold" value="📍 Lokasi GPS Teknisi Lapangan Saat Ini" readonly>
-          </div>
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold">2. Pilih Stasiun Akhir Tujuan Utama</label>
-            <select id="selectDestinationSite" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()"></select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold">3. Batas Radius Stasiun Singgah (Koridor Line)</label>
+          <div class="mb-3"><label class="form-label text-muted small fw-bold">1. Titik Awal Keberangkatan</label><input type="text" class="form-control form-control-sm bg-panel border-secondary text-info fw-bold" value="📍 Lokasi GPS Teknisi Lapangan Saat Ini" readonly></div>
+          <div class="mb-3"><label class="form-label text-muted small fw-bold">2. Pilih Stasiun Akhir Tujuan Utama</label><select id="selectDestinationSite" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()"></select></div>
+          <div class="mb-3"><label class="form-label text-muted small fw-bold">3. Batas Radius Stasiun Singgah (Koridor Line)</label>
             <select id="selectCorridorRadius" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()">
               <option value="25">Radius 25 km dari Jalur Lintasan</option>
               <option value="50" selected>Radius 50 km dari Jalur Lintasan</option>
               <option value="75">Radius 75 km dari Jalur Lintasan</option>
             </select>
           </div>
-
-          <!-- INPUT MANUAL SITE TAMBAHAN DILUAR KORIDOR -->
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-bold text-info"><i class="fa-solid fa-plus-circle me-1"></i> Tambah Site Kunjungan Manual (Opsional)</label>
-            <div class="input-group input-group-sm">
-              <select id="selectManualSite" class="form-select bg-panel border-secondary text-white"></select>
-              <button class="btn btn-outline-info fw-bold" type="button" onclick="addManualSiteToRoute()">+ Sisipkan</button>
-            </div>
+          <div class="mb-3"><label class="form-label text-muted small fw-bold text-info"><i class="fa-solid fa-plus-circle me-1"></i> Tambah Site Kunjungan Manual (Opsional)</label>
+            <div class="input-group input-group-sm"><select id="selectManualSite" class="form-select bg-panel border-secondary text-white"></select><button class="btn btn-outline-info fw-bold" type="button" onclick="addManualSiteToRoute()">+ Sisipkan</button></div>
           </div>
-
           <div id="expeditionResultBox" class="card bg-panel border-secondary p-3" style="display: none;">
             <h6 class="fw-bold text-warning border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-calculator me-1"></i> ANALISIS RUTE EKSPEDISI:</h6>
             <div class="mb-1 small">Stasiun Disinggahi: <strong id="resSiteCount" class="text-info">0 Site</strong></div>
             <div class="mb-1 small">Total Jarak Tempuh Estimasi: <strong id="resTotalDistance" class="text-info">0 km</strong></div>
             <div class="mb-2 small">Estimasi Waktu Perjalanan Total: <strong id="resEstimDays" class="text-warning mono fs-6">0 Hari</strong></div>
             <small class="text-muted d-block mb-2" style="font-size: 10px;">*Catatan: Stasiun TSI (Kantor) otomatis dikecualikan. Hapus centang jika tidak ingin mengunjungi site tersebut.</small>
-            
             <label class="form-label text-muted small fw-bold mt-1">Daftar Singgah & Eliminasi Manual:</label>
             <div id="resSiteList" class="list-group list-group-flush mb-3 small" style="max-height: 180px; overflow-y: auto;"></div>
-
             <button class="btn btn-info btn-sm w-100 fw-bold text-dark" onclick="openExpeditionGoogleMaps()"><i class="fa-solid fa-diamond-turn-right me-1"></i> Buka Rute Google Maps</button>
           </div>
         </div>
@@ -351,37 +237,26 @@
   <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-dark border-secondary">
-        <div class="modal-header border-secondary py-2">
-          <h6 class="modal-title text-info fw-bold"><i class="fa-solid fa-image me-1"></i> Detail Foto Dokumentasi</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body text-center p-2">
-          <img id="lightboxImage" src="" class="img-fluid rounded" style="max-height: 80vh; object-fit: contain;">
-        </div>
+        <div class="modal-header border-secondary py-2"><h6 class="modal-title text-info fw-bold"><i class="fa-solid fa-image me-1"></i> Detail Foto Dokumentasi</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body text-center p-2"><img id="lightboxImage" src="" class="img-fluid rounded" style="max-height: 80vh; object-fit: contain;"></div>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // PROTEKSI ANTI INSPECT
     document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-      if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))) e.preventDefault();
-    });
+    document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))) e.preventDefault(); });
 
     const SUPABASE_URL = "https://sazdesulrndmyluqiyie.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_s2uJAXTsqj1JkVRZrBHFFA_3KsyTEEC";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let map, activeStation = null, userLocationMarker = null, userAccuracyCircle = null, userCoords = null;
-    let rawStationData = [], allMarkers = [], groups = {};
-    let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null;
-    let expeditionGoogleMapsUrl = "";
-    let currentCorridorSites = []; 
+    let rawStationData = [], allMarkers = [], groups = {}, currentCorridorSites = [];
+    let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, expeditionGoogleMapsUrl = "";
 
     const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
@@ -400,32 +275,22 @@
 
     async function handleLogin(e) {
       e.preventDefault();
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value
-      });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
       if (error) alert("Login Gagal: " + error.message); else location.reload();
     }
-
     async function handleLogout() { await supabaseClient.auth.signOut(); location.reload(); }
 
     function initMap() {
-      const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
-      map = L.map('map', { center: [2.5, 99.2], zoom: 7, layers: [osm], zoomControl: false });
+      map = L.map('map', { center: [2.5, 99.2], zoom: 7, layers: [L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })], zoomControl: false });
       L.control.zoom({ position: 'bottomright' }).addTo(map);
-
       Object.keys(catMap).forEach(k => { groups[k] = L.layerGroup().addTo(map); });
       groups['off'] = L.layerGroup();
     }
 
     function getHaversineDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+      const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
     async function loadStationsFromDatabase() {
@@ -433,23 +298,21 @@
       let { data: viewStats } = await supabaseClient.from('v_statistik_aloptama').select('*');
       if (!stasiun) return;
 
-      rawStationData = stasiun;
-      allMarkers = [];
+      rawStationData = stasiun; allMarkers = [];
       Object.keys(groups).forEach(k => groups[k].clearLayers());
 
       let counts = { total: stasiun.length, up: 0, down: 0 };
-      const selectDest = document.getElementById('selectDestinationSite');
-      const selectManual = document.getElementById('selectManualSite');
+      const selectDest = document.getElementById('selectDestinationSite'), selectManual = document.getElementById('selectManualSite');
       selectDest.innerHTML = '<option value="">-- Pilih Stasiun Tujuan --</option>';
       selectManual.innerHTML = '<option value="">-- Pilih Site Untuk Disisipkan --</option>';
 
       stasiun.forEach(item => {
         const isUp = item.status !== 'OFF';
-        if (isUp) counts.up++; else counts.down++;
+        isUp ? counts.up++ : counts.down++;
 
-        if (item.id.toUpperCase() !== 'TSI' && item.id.toUpperCase() !== 'LD_TSI') {
-          selectDest.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
-          selectManual.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
+        if (!['TSI', 'LD_TSI'].includes(item.id.toUpperCase())) {
+          const opt = `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
+          selectDest.innerHTML += opt; selectManual.innerHTML += opt;
         }
 
         const iconHtml = {
@@ -459,13 +322,9 @@
           magneto: '<div class="marker-box"><i class="fa-solid fa-cube"></i></div>'
         }[item.kategori] || '';
 
-        const iconSizeMap = { seismo: [20, 20], wrsng: [24, 24], accel: [18, 18], inten: [22, 22], tsunami: [24, 24], lightning: [24, 24], magneto: [22, 22] };
-        const sz = iconSizeMap[item.kategori] || [24, 24];
-        
+        const sz = { seismo: [20, 20], wrsng: [24, 24], accel: [18, 18], inten: [22, 22], tsunami: [24, 24], lightning: [24, 24], magneto: [22, 22] }[item.kategori] || [24, 24];
         const icon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: sz, iconAnchor: [sz[0] / 2, sz[1] / 2] });
-        const marker = L.marker([item.lat, item.lng], { icon }).on('click', () => { 
-          activeStation = item; openDetailPanel(item); map.flyTo([item.lat, item.lng], 13); 
-        });
+        const marker = L.marker([item.lat, item.lng], { icon }).on('click', () => { activeStation = item; openDetailPanel(item); map.flyTo([item.lat, item.lng], 13); });
 
         if (groups[item.kategori]) marker.addTo(groups[item.kategori]);
         if (!isUp) marker.addTo(groups['off']);
@@ -479,63 +338,39 @@
       document.getElementById('tbl-priority-total').innerText = `${counts.down} SITE`;
       document.getElementById('tbl-percent').innerText = `${((counts.up / counts.total) * 100).toFixed(1)}%`;
 
-      const tbody = document.getElementById('tbl-detail-rows');
-      tbody.innerHTML = '';
+      const tbody = document.getElementById('tbl-detail-rows'); tbody.innerHTML = '';
       Object.keys(catMap).forEach(k => {
-        const catName = catMap[k];
         const stat = (viewStats || []).find(v => v.kategori === k) || { total: 0, up: 0, down: 0, prio: 0, active_pct: 0 };
         document.getElementById(`count-${k}`).innerText = stat.total || 0;
-        tbody.innerHTML += `<tr><td>${catName}</td><td>${stat.total||0}</td><td class="text-success">${stat.up||0}</td><td class="text-danger">${stat.down||0}</td><td class="text-danger">${stat.prio||0}</td><td class="text-info">${stat.active_pct||0}%</td></tr>`;
+        tbody.innerHTML += `<tr><td>${catMap[k]}</td><td>${stat.total||0}</td><td class="text-success">${stat.up||0}</td><td class="text-danger">${stat.down||0}</td><td class="text-danger">${stat.prio||0}</td><td class="text-info">${stat.active_pct||0}%</td></tr>`;
       });
     }
 
     function planMultiSiteRoute() {
-      const offSites = allMarkers.filter(m => m.data.status === 'OFF' && m.data.id.toUpperCase() !== 'TSI' && m.data.id.toUpperCase() !== 'LD_TSI').map(m => m.data);
-      if (offSites.length === 0) {
-        alert("✅ Tidak ada stasiun luar yang bermasalah (OFF). Seluruh sistem berjalan normal!");
-        return;
-      }
+      const offSites = allMarkers.filter(m => m.data.status === 'OFF' && !['TSI', 'LD_TSI'].includes(m.data.id.toUpperCase())).map(m => m.data);
+      if (!offSites.length) return alert("✅ Tidak ada stasiun luar yang bermasalah (OFF)!");
+      if (!userCoords) return locateUser();
 
-      if (!userCoords) {
-        alert("📍 Silakan klik tombol 'Posisi Saya' terlebih dahulu.");
-        locateUser();
-        return;
-      }
-
-      let currentLat = userCoords.lat, currentLng = userCoords.lng;
-      let sortedSites = [];
-      let remainingSites = [...offSites];
-
-      while (remainingSites.length > 0) {
+      let currentLat = userCoords.lat, currentLng = userCoords.lng, sortedSites = [], remainingSites = [...offSites];
+      while (remainingSites.length) {
         remainingSites.sort((a, b) => getHaversineDistance(currentLat, currentLng, a.lat, a.lng) - getHaversineDistance(currentLat, currentLng, b.lat, b.lng));
-        let nearest = remainingSites.shift();
-        sortedSites.push(nearest);
+        let nearest = remainingSites.shift(); sortedSites.push(nearest);
         currentLat = nearest.lat; currentLng = nearest.lng;
       }
 
-      let originParam = `${userCoords.lat},${userCoords.lng}`;
-      let destinationParam = `${sortedSites[sortedSites.length - 1].lat},${sortedSites[sortedSites.length - 1].lng}`;
-      let waypointsParam = sortedSites.slice(0, sortedSites.length - 1).map(s => `${s.lat},${s.lng}`).join('|');
-
-      let googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originParam}&destination=${destinationParam}`;
-      if (waypointsParam) googleMapsUrl += `&waypoints=${waypointsParam}`;
-
-      window.open(googleMapsUrl, '_blank');
+      let waypoints = sortedSites.slice(0, -1).map(s => `${s.lat},${s.lng}`).join('|');
+      let url = `https://www.google.com/maps/dir/?api=1&origin=${userCoords.lat},${userCoords.lng}&destination=${sortedSites.at(-1).lat},${sortedSites.at(-1).lng}`;
+      if (waypoints) url += `&waypoints=${waypoints}`;
+      window.open(url, '_blank');
     }
 
     function calculateExpeditionRoute() {
-      const destId = document.getElementById('selectDestinationSite').value;
-      const radiusKm = parseFloat(document.getElementById('selectCorridorRadius').value);
-      const resBox = document.getElementById('expeditionResultBox');
-
-      if (!destId) { resBox.style.display = 'none'; return; }
+      const destId = document.getElementById('selectDestinationSite').value, radiusKm = parseFloat(document.getElementById('selectCorridorRadius').value), resBox = document.getElementById('expeditionResultBox');
+      if (!destId) return resBox.style.display = 'none';
 
       if (!userCoords) {
-        if (!navigator.geolocation) { alert("⚠️ GPS Tidak Didukung."); return; }
-        navigator.geolocation.getCurrentPosition(pos => {
-          userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          calculateExpeditionRoute();
-        }, () => alert("⚠️ Harap izinkan akses GPS pada browser Anda."));
+        if (!navigator.geolocation) return alert("⚠️ GPS Tidak Didukung.");
+        navigator.geolocation.getCurrentPosition(pos => { userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; calculateExpeditionRoute(); }, () => alert("⚠️ Harap izinkan akses GPS pada browser Anda."));
         return;
       }
 
@@ -544,15 +379,11 @@
 
       currentCorridorSites = [];
       rawStationData.forEach(site => {
-        if (site.id === destSite.id || site.id.toUpperCase() === 'TSI' || site.id.toUpperCase() === 'LD_TSI') return;
-        
+        if (site.id === destSite.id || ['TSI', 'LD_TSI'].includes(site.id.toUpperCase())) return;
         let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, site.lat, site.lng);
         let distToDest = getHaversineDistance(site.lat, site.lng, destSite.lat, destSite.lng);
         let directDist = getHaversineDistance(userCoords.lat, userCoords.lng, destSite.lat, destSite.lng);
-
-        if ((distFromStart + distToDest - directDist) <= (radiusKm / 3)) {
-          currentCorridorSites.push({ ...site, distFromStart, selected: true, manual: false });
-        }
+        if ((distFromStart + distToDest - directDist) <= (radiusKm / 3)) currentCorridorSites.push({ ...site, distFromStart, selected: true, manual: false });
       });
 
       currentCorridorSites.sort((a, b) => a.distFromStart - b.distFromStart);
@@ -560,62 +391,42 @@
       resBox.style.display = 'block';
     }
 
-    // FUNGSI INPUT MANUAL SITE TAMBAHAN DILUAR KORIDOR OTOMATIS
     function addManualSiteToRoute() {
-      const manualId = document.getElementById('selectManualSite').value;
-      const destId = document.getElementById('selectDestinationSite').value;
-
-      if (!destId) { alert("📍 Silakan pilih Stasiun Akhir Tujuan Utama terlebih dahulu."); return; }
-      if (!manualId) { alert("📍 Silakan pilih site yang ingin disisipkan."); return; }
-      if (manualId === destId) { alert("⚠️ Site ini sudah dipilih sebagai Tujuan Utama."); return; }
+      const manualId = document.getElementById('selectManualSite').value, destId = document.getElementById('selectDestinationSite').value;
+      if (!destId) return alert("📍 Silakan pilih Stasiun Akhir Tujuan Utama terlebih dahulu.");
+      if (!manualId) return alert("📍 Silakan pilih site yang ingin disisipkan.");
+      if (manualId === destId) return alert("⚠️ Site ini sudah dipilih sebagai Tujuan Utama.");
 
       const exists = currentCorridorSites.find(s => s.id === manualId);
-      if (exists) {
-        exists.selected = true; // Aktifkan jika sebelumnya di-uncheck
-      } else {
+      if (exists) exists.selected = true;
+      else {
         const siteData = rawStationData.find(s => s.id === manualId);
         if (siteData) {
-          let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, siteData.lat, siteData.lng);
-          currentCorridorSites.push({ ...siteData, distFromStart, selected: true, manual: true });
+          currentCorridorSites.push({ ...siteData, distFromStart: getHaversineDistance(userCoords.lat, userCoords.lng, siteData.lat, siteData.lng), selected: true, manual: true });
           currentCorridorSites.sort((a, b) => a.distFromStart - b.distFromStart);
         }
       }
-
-      const destSite = rawStationData.find(s => s.id === destId);
-      renderExpeditionResults(destSite);
+      renderExpeditionResults(rawStationData.find(s => s.id === destId));
       document.getElementById('selectManualSite').value = "";
     }
 
     function renderExpeditionResults(destSite) {
       const activeCorridorSites = currentCorridorSites.filter(s => s.selected);
-      const totalVisitedSites = activeCorridorSites.length + 1; 
+      const totalVisitedSites = activeCorridorSites.length + 1;
 
-      let totalDistKm = 0;
-      let currLat = userCoords.lat, currLng = userCoords.lng;
-      activeCorridorSites.forEach(s => {
-        totalDistKm += getHaversineDistance(currLat, currLng, s.lat, s.lng);
-        currLat = s.lat; currLng = s.lng;
-      });
+      let totalDistKm = 0, currLat = userCoords.lat, currLng = userCoords.lng;
+      activeCorridorSites.forEach(s => { totalDistKm += getHaversineDistance(currLat, currLng, s.lat, s.lng); currLat = s.lat; currLng = s.lng; });
       totalDistKm += getHaversineDistance(currLat, currLng, destSite.lat, destSite.lng);
 
-      let travelDays = Math.ceil(totalDistKm / 200);
-      let totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
+      let travelDays = Math.ceil(totalDistKm / 200), totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
 
       document.getElementById('resSiteCount').innerText = `${totalVisitedSites} Site (${activeCorridorSites.length} Singgah + 1 Tujuan)`;
       document.getElementById('resTotalDistance').innerText = `±${Math.round(totalDistKm)} km`;
       document.getElementById('resEstimDays').innerText = `${totalEstimDays} Hari Kerja`;
 
-      const listEl = document.getElementById('resSiteList');
-      listEl.innerHTML = '';
+      const listEl = document.getElementById('resSiteList'); listEl.innerHTML = '';
       currentCorridorSites.forEach((s) => {
-        listEl.innerHTML += `
-          <div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded">
-            <div class="form-check m-0">
-              <input class="form-check-input" type="checkbox" id="chk_${s.id}" ${s.selected ? 'checked' : ''} onchange="toggleSiteSelection('${s.id}')">
-              <label class="form-check-label small" for="chk_${s.id}">${s.nama} ${s.manual ? '<span class="text-info">(Sisipan Manual)</span>' : ''}</label>
-            </div>
-            <span class="badge ${s.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${s.status||'ON'}</span>
-          </div>`;
+        listEl.innerHTML += `<div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded"><div class="form-check m-0"><input class="form-check-input" type="checkbox" id="chk_${s.id}" ${s.selected ? 'checked' : ''} onchange="toggleSiteSelection('${s.id}')"><label class="form-check-label small" for="chk_${s.id}">${s.nama} ${s.manual ? '<span class="text-info">(Sisipan Manual)</span>' : ''}</label></div><span class="badge ${s.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${s.status||'ON'}</span></div>`;
       });
       listEl.innerHTML += `<div class="list-group-item bg-dark text-info border-info p-1 px-2 d-flex justify-content-between align-items-center fw-bold rounded"><span>🎯 ${destSite.nama} (Tujuan Utama)</span> <span class="badge ${destSite.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${destSite.status||'ON'}</span></div>`;
 
@@ -626,121 +437,57 @@
 
     function toggleSiteSelection(siteId) {
       const site = currentCorridorSites.find(s => s.id === siteId);
-      if (site) {
-        site.selected = !site.selected;
-        const destId = document.getElementById('selectDestinationSite').value;
-        const destSite = rawStationData.find(s => s.id === destId);
-        renderExpeditionResults(destSite);
-      }
+      if (site) { site.selected = !site.selected; renderExpeditionResults(rawStationData.find(s => s.id === document.getElementById('selectDestinationSite').value)); }
     }
 
-    function openExpeditionGoogleMaps() {
-      if (expeditionGoogleMapsUrl) window.open(expeditionGoogleMapsUrl, '_blank');
-    }
+    function openExpeditionGoogleMaps() { if (expeditionGoogleMapsUrl) window.open(expeditionGoogleMapsUrl, '_blank'); }
 
     async function saveBypassOffReport(e) {
-      e.preventDefault();
-      if (!activeStation) return;
-      await supabaseClient.rpc('rpc_save_bypass_off', {
-        p_id: activeStation.id,
-        p_reason: document.getElementById('bypassReason').value,
-        p_notes: document.getElementById('bypassNotes').value
-      });
-      alert("⚠️ LAPORAN ALAT MATI TERSIMPAN!");
-      loadStationsFromDatabase(); closePanel();
+      e.preventDefault(); if (!activeStation) return;
+      await supabaseClient.rpc('rpc_save_bypass_off', { p_id: activeStation.id, p_reason: document.getElementById('bypassReason').value, p_notes: document.getElementById('bypassNotes').value });
+      alert("⚠️ LAPORAN ALAT MATI TERSIMPAN!"); loadStationsFromDatabase(); closePanel();
     }
 
     async function saveReportToDatabase(e) {
-      e.preventDefault();
-      if (!activeStation) return;
-
-      const btnSubmit = document.getElementById('btnSubmitForm');
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunggah...';
+      e.preventDefault(); if (!activeStation) return;
+      const btnSubmit = document.getElementById('btnSubmitForm'); btnSubmit.disabled = true; btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunggah...';
 
       let existingPhotos = Array.isArray(activeStation.foto_urls) ? activeStation.foto_urls : [];
       const fileInput = document.getElementById('formPhoto');
 
       if (fileInput.files.length > 0) {
         for (let i = 0; i < fileInput.files.length; i++) {
-          const file = fileInput.files[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${activeStation.id}_${Date.now()}_${i}.${fileExt}`;
-
-          const { error: uploadError } = await supabaseClient.storage.from('dokumentasi').upload(fileName, file, { upsert: true });
-
-          if (!uploadError) {
-            const { data: publicUrlData } = supabaseClient.storage.from('dokumentasi').getPublicUrl(fileName);
-            existingPhotos.push(publicUrlData.publicUrl);
-          }
+          const file = fileInput.files[i], fileName = `${activeStation.id}_${Date.now()}_${i}.${file.name.split('.').pop()}`;
+          const { error } = await supabaseClient.storage.from('dokumentasi').upload(fileName, file, { upsert: true });
+          if (!error) existingPhotos.push(supabaseClient.storage.from('dokumentasi').getPublicUrl(fileName).data.publicUrl);
         }
       }
 
-      await supabaseClient.rpc('rpc_save_maintenance_log', {
-        p_id: activeStation.id,
-        p_status: document.getElementById('formStatus').value,
-        p_date: document.getElementById('formDate').value,
-        p_activity: document.getElementById('formActivity').value,
-        p_notes: document.getElementById('formNotes').value,
-        p_recs: document.getElementById('formRecs').value
-      });
-
+      await supabaseClient.rpc('rpc_save_maintenance_log', { p_id: activeStation.id, p_status: document.getElementById('formStatus').value, p_date: document.getElementById('formDate').value, p_activity: document.getElementById('formActivity').value, p_notes: document.getElementById('formNotes').value, p_recs: document.getElementById('formRecs').value });
       await supabaseClient.from('stasiun').update({ foto_urls: existingPhotos }).eq('id', activeStation.id);
 
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-arrow-up me-1"></i> Commit Data Ke Database';
-
-      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!");
-      fileInput.value = "";
-      loadStationsFromDatabase(); closePanel();
+      btnSubmit.disabled = false; btnSubmit.innerHTML = '<i class="fa-solid fa-cloud-arrow-up me-1"></i> Commit Data Ke Database';
+      alert("✅ LOG MAINTENANCE BERHASIL DISIMPAN!"); fileInput.value = ""; loadStationsFromDatabase(); closePanel();
     }
 
     function locateUser() {
-      const btn = document.getElementById('btnLocateUser');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Melacak...';
+      const btn = document.getElementById('btnLocateUser'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Melacak...';
+      if (!navigator.geolocation) return alert("⚠️ GPS Tidak Didukung.");
 
-      if (!navigator.geolocation) {
-        alert("⚠️ GPS Tidak Didukung.");
-        btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya';
-        return;
-      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords; userCoords = { lat, lng };
+        if (userLocationMarker) map.removeLayer(userLocationMarker);
+        if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
 
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-          userCoords = { lat, lng };
+        userLocationMarker = L.marker([lat, lng], { icon: L.divIcon({ className: 'custom-marker', html: '<div style="background:#2563eb; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px #2563eb;"><i class="fa-solid fa-user-gear"></i></div>', iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(map);
+        userAccuracyCircle = L.circle([lat, lng], { radius: accuracy, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.15, weight: 1 }).addTo(map);
 
-          if (userLocationMarker) map.removeLayer(userLocationMarker);
-          if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
-
-          userLocationMarker = L.marker([lat, lng], {
-            icon: L.divIcon({
-              className: 'custom-marker',
-              html: '<div style="background:#2563eb; color:white; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px #2563eb;"><i class="fa-solid fa-user-gear"></i></div>',
-              iconSize: [26, 26], iconAnchor: [13, 13]
-            })
-          }).addTo(map);
-
-          userAccuracyCircle = L.circle([lat, lng], {
-            radius: accuracy, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.15, weight: 1
-          }).addTo(map);
-
-          userLocationMarker.bindPopup(`<b>📍 Lokasi Teknisi Lapangan</b><br>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}<br><small style="color:#38bdf8;">Toleransi: ±${Math.round(accuracy)} meter</small>`).openPopup();
-          map.flyTo([lat, lng], 15);
-          btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya';
-        },
-        () => {
-          alert("⚠️ Gagal melacak posisi GPS.");
-          btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya';
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
-      );
+        userLocationMarker.bindPopup(`<b>📍 Lokasi Teknisi Lapangan</b><br>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}<br><small style="color:#38bdf8;">Toleransi: ±${Math.round(accuracy)} meter</small>`).openPopup();
+        map.flyTo([lat, lng], 15); btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya';
+      }, () => { alert("⚠️ Gagal melacak posisi GPS."); btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya'; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
     }
 
-    function openLightboxImage(url) {
-      document.getElementById('lightboxImage').src = url;
-      lightboxModalObj.show();
-    }
+    function openLightboxImage(url) { document.getElementById('lightboxImage').src = url; lightboxModalObj.show(); }
 
     function openDetailPanel(item) {
       document.getElementById('panelTitle').innerText = item.nama;
@@ -749,70 +496,42 @@
       document.getElementById('panelNav').href = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
       
       const badge = document.getElementById('panelStatusBadge');
-      badge.innerText = item.status || 'ON';
-      badge.className = `badge ${item.status === 'OFF' ? 'bg-danger' : 'bg-success'} fw-bold`;
+      badge.innerText = item.status || 'ON'; badge.className = `badge ${item.status === 'OFF' ? 'bg-danger' : 'bg-success'} fw-bold`;
 
       document.getElementById('valLastVisit').innerText = item.kunjungan_terakhir || 'Belum ada record';
       document.getElementById('valActivity').innerText = item.kegiatan || '-';
       document.getElementById('valNotes').innerText = item.catatan || '-';
       document.getElementById('valRecs').innerText = item.rekomendasi || '-';
 
-      const nearbyContainer = document.getElementById('nearbySitesContainer');
-      nearbyContainer.innerHTML = '';
-      let nearbySites = rawStationData.filter(s => s.id !== item.id).map(s => {
-        return { ...s, dist: getHaversineDistance(item.lat, item.lng, s.lat, s.lng) };
-      }).sort((a, b) => a.dist - b.dist).slice(0, 3);
-
-      nearbySites.forEach(ns => {
-        nearbyContainer.innerHTML += `
-          <div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded" style="cursor:pointer;" onclick="focusToSite('${ns.id}')">
-            <div><strong>${ns.nama}</strong> <small class="text-muted d-block" style="font-size:9px;">Jarak: ±${ns.dist.toFixed(1)} km</small></div>
-            <span class="badge ${ns.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${ns.status||'ON'}</span>
-          </div>`;
+      const nearbyContainer = document.getElementById('nearbySitesContainer'); nearbyContainer.innerHTML = '';
+      rawStationData.filter(s => s.id !== item.id).map(s => ({ ...s, dist: getHaversineDistance(item.lat, item.lng, s.lat, s.lng) })).sort((a, b) => a.dist - b.dist).slice(0, 3).forEach(ns => {
+        nearbyContainer.innerHTML += `<div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded" style="cursor:pointer;" onclick="focusToSite('${ns.id}')"><div><strong>${ns.nama}</strong> <small class="text-muted d-block" style="font-size:9px;">Jarak: ±${ns.dist.toFixed(1)} km</small></div><span class="badge ${ns.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${ns.status||'ON'}</span></div>`;
       });
 
-      const galleryEl = document.getElementById('docGallery');
-      const noImgEl = document.getElementById('noImgText');
-      galleryEl.innerHTML = '';
-
+      const galleryEl = document.getElementById('docGallery'), noImgEl = document.getElementById('noImgText'); galleryEl.innerHTML = '';
       let photos = Array.isArray(item.foto_urls) ? item.foto_urls : [];
-      if (photos.length > 0) {
+      if (photos.length) {
         photos.forEach(url => {
-          const img = document.createElement('img'); 
-          img.src = url; 
-          img.className = 'doc-img-item border border-secondary';
-          img.onclick = () => openLightboxImage(url);
-          galleryEl.appendChild(img);
+          const img = document.createElement('img'); img.src = url; img.className = 'doc-img-item border border-secondary'; img.onclick = () => openLightboxImage(url); galleryEl.appendChild(img);
         });
         galleryEl.style.display = 'flex'; noImgEl.style.display = 'none';
-      } else {
-        galleryEl.style.display = 'none'; noImgEl.style.display = 'inline';
-      }
+      } else { galleryEl.style.display = 'none'; noImgEl.style.display = 'inline'; }
 
       const offBox = document.getElementById('offReportSection');
       if (item.status === 'OFF' && item.tgl_laporan_mati) {
-        document.getElementById('valOffDate').innerText = item.tgl_laporan_mati;
-        document.getElementById('valOffReason').innerText = item.penyebab_mati || '-';
-        document.getElementById('valOffNotes').innerText = item.troubleshoot_mati || '-';
-        offBox.style.display = 'block';
+        document.getElementById('valOffDate').innerText = item.tgl_laporan_mati; document.getElementById('valOffReason').innerText = item.penyebab_mati || '-'; document.getElementById('valOffNotes').innerText = item.troubleshoot_mati || '-'; offBox.style.display = 'block';
       } else offBox.style.display = 'none';
 
-      document.getElementById('formStatus').value = item.status || 'ON';
-      document.getElementById('formDate').value = item.kunjungan_terakhir || new Date().toISOString().split('T')[0];
-      
+      document.getElementById('formStatus').value = item.status || 'ON'; document.getElementById('formDate').value = item.kunjungan_terakhir || new Date().toISOString().split('T')[0];
       offcanvasObj.show();
     }
 
     function focusToSite(siteId) {
       const match = allMarkers.find(m => m.data.id === siteId);
-      if (match) {
-        if (!map.hasLayer(match.group)) match.group.addTo(map);
-        map.flyTo([match.data.lat, match.data.lng], 13);
-        match.marker.fire('click');
-      }
+      if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); }
     }
 
-    function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length > 0) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [30, 30] }); }
+    function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [30, 30] }); }
     function hideAllLayers() { Object.keys(groups).forEach(k => map.removeLayer(groups[k])); }
     function resetFilter() { hideAllLayers(); Object.keys(catMap).forEach(k => map.addLayer(groups[k])); map.setView([2.5, 99.2], 7); closePanel(); }
     function toggleLayerFilter(type) { hideAllLayers(); if (groups[type]) map.addLayer(groups[type]); closePanel(); }
