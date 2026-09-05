@@ -376,7 +376,7 @@ function toggleStatsBox() {
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL EDITOR DATA ALOPTAMA (NAMA ALAT PERSIS DOKUMEN PDF BMKG)
+// MODUL EDITOR DATA ALOPTAMA (PERSIS PERSIS DOKUMEN PDF BMKG)
 // ============================================================
 async function renderAloptamaEditorTable() {
   const tbody = document.getElementById('editorAloptamaBody');
@@ -393,7 +393,7 @@ async function renderAloptamaEditorTable() {
   tbody.innerHTML = '';
 
   items.forEach((item) => {
-    // Tampilkan nama_alat_site jika ada, jika NULL tampilkan lokasi (persis format PDF BMKG)
+    // Menampilkan nama_alat_site atau lokasi secara presisi tanpa teks tambahan
     const displayName = item.nama_alat_site || item.lokasi || '-';
 
     tbody.innerHTML += `
@@ -468,7 +468,7 @@ async function saveAloptamaBatchUpdates() {
 }
 
 // ============================================================
-// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS & TATA LETAK PERSIS PDF)
+// MODUL CETAK LAPORAN ALOPTAMA PDF (HEADER & DYNAMIC TABLE FORMAT)
 // ============================================================
 async function generateAloptamaPDF(e) {
   e.preventDefault();
