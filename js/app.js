@@ -151,6 +151,60 @@ async function loadStationsFromDatabase() {
   });
 }
 
+function openDetailPanel(item) {
+  document.getElementById('panelTitle').innerText = item.nama;
+  document.getElementById('panelCategory').innerText = item.kategori.toUpperCase();
+  document.getElementById('panelCoords').innerText = `${item.lat}, ${item.lng}`;
+  document.getElementById('panelNav').href = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
+  
+  const badge = document.getElementById('panelStatusBadge');
+  badge.innerText = item.status || 'ON'; badge.className = `badge ${item.status === 'OFF' ? 'bg-danger' : 'bg-success'} fw-bold`;
+
+  // INTEGRASI DINAMIS DATA PIC WA
+  const picCard = document.getElementById('picCardSection');
+  const picNameEl = document.getElementById('valPicName');
+  const waBtn = document.getElementById('btnWaPic');
+
+  if (item.pic_wa) {
+    let cleanWa = item.pic_wa.replace(/[^0-9]/g, '');
+    if (cleanWa.startsWith('0')) cleanWa = '62' + cleanWa.slice(1);
+
+    const message = encodeURIComponent(`Halo ${item.pic_nama || 'PIC'}, saya Teknisi BMKG ingin mengonfirmasi terkait stasiun ${item.nama} (${item.id}).`);
+    picNameEl.innerText = item.pic_nama || 'PIC Lapangan';
+    waBtn.href = `https://wa.me/${cleanWa}?text=${message}`;
+    picCard.style.display = 'block';
+  } else {
+    picCard.style.display = 'none';
+  }
+
+  document.getElementById('valLastVisit').innerText = item.kunjungan_terakhir || 'Belum ada record';
+  document.getElementById('valActivity').innerText = item.kegiatan || '-';
+  document.getElementById('valNotes').innerText = item.catatan || '-';
+  document.getElementById('valRecs').innerText = item.rekomendasi || '-';
+
+  const nearbyContainer = document.getElementById('nearbySitesContainer'); nearbyContainer.innerHTML = '';
+  rawStationData.filter(s => s.id !== item.id).map(s => ({ ...s, dist: getHaversineDistance(item.lat, item.lng, s.lat, s.lng) })).sort((a, b) => a.dist - b.dist).slice(0, 3).forEach(ns => {
+    nearbyContainer.innerHTML += `<div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded" style="cursor:pointer;" onclick="focusToSite('${ns.id}')"><div><strong>${ns.nama}</strong> <small class="text-muted d-block" style="font-size:9px;">Jarak: ±${ns.dist.toFixed(1)} km</small></div><span class="badge ${ns.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${ns.status||'ON'}</span></div>`;
+  });
+
+  const galleryEl = document.getElementById('docGallery'), noImgEl = document.getElementById('noImgText'); galleryEl.innerHTML = '';
+  let photos = Array.isArray(item.foto_urls) ? item.foto_urls : [];
+  if (photos.length) {
+    photos.forEach(url => {
+      const img = document.createElement('img'); img.src = url; img.className = 'doc-img-item border border-secondary'; img.onclick = () => openLightboxImage(url); galleryEl.appendChild(img);
+    });
+    galleryEl.style.display = 'grid'; noImgEl.style.display = 'none';
+  } else { galleryEl.style.display = 'none'; noImgEl.style.display = 'inline'; }
+
+  const offBox = document.getElementById('offReportSection');
+  if (item.status === 'OFF' && item.tgl_laporan_mati) {
+    document.getElementById('valOffDate').innerText = item.tgl_laporan_mati; document.getElementById('valOffReason').innerText = item.penyebab_mati || '-'; document.getElementById('valOffNotes').innerText = item.troubleshoot_mati || '-'; offBox.style.display = 'block';
+  } else offBox.style.display = 'none';
+
+  document.getElementById('formStatus').value = item.status || 'ON'; document.getElementById('formDate').value = item.kunjungan_terakhir || new Date().toISOString().split('T')[0];
+  offcanvasObj.show();
+}
+
 function planMultiSiteRoute() {
   const offSites = allMarkers.filter(m => m.data.status === 'OFF' && !excludedSitesList.includes(m.data.id.toUpperCase())).map(m => m.data);
   if (!offSites.length) return alert("✅ Tidak ada stasiun luar yang bermasalah (OFF)!");
@@ -294,43 +348,6 @@ function locateUser() {
 }
 
 function openLightboxImage(url) { document.getElementById('lightboxImage').src = url; lightboxModalObj.show(); }
-
-function openDetailPanel(item) {
-  document.getElementById('panelTitle').innerText = item.nama;
-  document.getElementById('panelCategory').innerText = item.kategori.toUpperCase();
-  document.getElementById('panelCoords').innerText = `${item.lat}, ${item.lng}`;
-  document.getElementById('panelNav').href = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
-  
-  const badge = document.getElementById('panelStatusBadge');
-  badge.innerText = item.status || 'ON'; badge.className = `badge ${item.status === 'OFF' ? 'bg-danger' : 'bg-success'} fw-bold`;
-
-  document.getElementById('valLastVisit').innerText = item.kunjungan_terakhir || 'Belum ada record';
-  document.getElementById('valActivity').innerText = item.kegiatan || '-';
-  document.getElementById('valNotes').innerText = item.catatan || '-';
-  document.getElementById('valRecs').innerText = item.rekomendasi || '-';
-
-  const nearbyContainer = document.getElementById('nearbySitesContainer'); nearbyContainer.innerHTML = '';
-  rawStationData.filter(s => s.id !== item.id).map(s => ({ ...s, dist: getHaversineDistance(item.lat, item.lng, s.lat, s.lng) })).sort((a, b) => a.dist - b.dist).slice(0, 3).forEach(ns => {
-    nearbyContainer.innerHTML += `<div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded" style="cursor:pointer;" onclick="focusToSite('${ns.id}')"><div><strong>${ns.nama}</strong> <small class="text-muted d-block" style="font-size:9px;">Jarak: ±${ns.dist.toFixed(1)} km</small></div><span class="badge ${ns.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${ns.status||'ON'}</span></div>`;
-  });
-
-  const galleryEl = document.getElementById('docGallery'), noImgEl = document.getElementById('noImgText'); galleryEl.innerHTML = '';
-  let photos = Array.isArray(item.foto_urls) ? item.foto_urls : [];
-  if (photos.length) {
-    photos.forEach(url => {
-      const img = document.createElement('img'); img.src = url; img.className = 'doc-img-item border border-secondary'; img.onclick = () => openLightboxImage(url); galleryEl.appendChild(img);
-    });
-    galleryEl.style.display = 'grid'; noImgEl.style.display = 'none';
-  } else { galleryEl.style.display = 'none'; noImgEl.style.display = 'inline'; }
-
-  const offBox = document.getElementById('offReportSection');
-  if (item.status === 'OFF' && item.tgl_laporan_mati) {
-    document.getElementById('valOffDate').innerText = item.tgl_laporan_mati; document.getElementById('valOffReason').innerText = item.penyebab_mati || '-'; document.getElementById('valOffNotes').innerText = item.troubleshoot_mati || '-'; offBox.style.display = 'block';
-  } else offBox.style.display = 'none';
-
-  document.getElementById('formStatus').value = item.status || 'ON'; document.getElementById('formDate').value = item.kunjungan_terakhir || new Date().toISOString().split('T')[0];
-  offcanvasObj.show();
-}
 
 function focusToSite(siteId) {
   const match = allMarkers.find(m => m.data.id === siteId);
