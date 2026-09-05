@@ -10,6 +10,7 @@ let rawStationData = [], allMarkers = [], groups = {}, currentCorridorSites = []
 let masterCategories = {}, masterConfigs = {}, excludedSitesList = [];
 let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, pdfModalObj = null, expeditionGoogleMapsUrl = "";
 let localAloptamaCache = [];
+let searchDebounceTimer = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   offcanvasObj = new bootstrap.Offcanvas(document.getElementById('detailOffcanvas'));
@@ -373,10 +374,41 @@ function toggleStatsBox() {
     icon.className = 'fa-solid fa-chevron-down text-muted';
   }
 }
-function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL EDITOR DATA ALOPTAMA (PERSIS PERSIS DOKUMEN PDF BMKG)
+// MODUL PENCARIAN AUTOMATIS (DEBOUNCE UNTUK MENUNGGU BERHENTI MENGETIK)
+// ============================================================
+function handleSearchInput() {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchStation();
+  }, 600);
+}
+
+function searchStation() {
+  const inputEl = document.getElementById('searchInput');
+  const q = inputEl.value.toLowerCase().trim();
+
+  if (!q || q.length < 2) return;
+
+  const match = allMarkers.find(m => m.data.id.toLowerCase() === q) || 
+                allMarkers.find(m => m.title.includes(q));
+
+  if (match) {
+    if (!map.hasLayer(match.group)) map.addLayer(match.group);
+    map.flyTo([match.data.lat, match.data.lng], 13);
+    
+    activeStation = match.data;
+    openDetailPanel(match.data);
+
+    setTimeout(() => {
+      inputEl.focus();
+    }, 200);
+  }
+}
+
+// ============================================================
+// MODUL EDITOR DATA ALOPTAMA
 // ============================================================
 async function renderAloptamaEditorTable() {
   const tbody = document.getElementById('editorAloptamaBody');
@@ -393,7 +425,6 @@ async function renderAloptamaEditorTable() {
   tbody.innerHTML = '';
 
   items.forEach((item) => {
-    // Menampilkan nama_alat_site atau lokasi secara presisi tanpa teks tambahan
     const displayName = item.nama_alat_site || item.lokasi || '-';
 
     tbody.innerHTML += `
@@ -468,7 +499,7 @@ async function saveAloptamaBatchUpdates() {
 }
 
 // ============================================================
-// MODUL CETAK LAPORAN ALOPTAMA PDF (HEADER & DYNAMIC TABLE FORMAT)
+// MODUL CETAK LAPORAN ALOPTAMA PDF
 // ============================================================
 async function generateAloptamaPDF(e) {
   e.preventDefault();
