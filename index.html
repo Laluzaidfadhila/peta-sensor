@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Monitoring Aloptama Stasiun</title>
   
-  <!-- Fonts & External Frameworks -->
+  <!-- Fonts & Frameworks -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
-  <!-- CSS Kustom (Menggunakan relatif ./css/) -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css" />
   
-  <!-- Supabase JS Client -->
+  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body oncontextmenu="return false;">
 
-  <!-- LOGIN SCREEN -->
+  <!-- LOGIN OVERLAY -->
   <div id="loginScreen">
     <div class="card bg-panel border-secondary text-white p-4 shadow-lg login-card">
       <div class="text-center mb-4">
@@ -57,6 +57,7 @@
     </nav>
 
     <div class="container-fluid p-2 p-md-3">
+      <!-- CONTROL BAR -->
       <div class="row g-2 mb-2">
         <div class="col-12 col-md">
           <div class="input-group input-group-sm">
@@ -72,6 +73,7 @@
         </div>
       </div>
 
+      <!-- MAP CONTAINER DENGAN FLOATING WIDGET -->
       <div class="map-container border border-secondary">
         <div class="floating-stats-bar" id="floatingStatsContainer"></div>
         <div class="stats-floating-box">
@@ -112,6 +114,21 @@
       <h5 id="panelTitle" class="fw-bold mb-1">Nama Stasiun</h5>
       <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1 text-info"></i> <span id="panelCoords">0, 0</span></p>
 
+      <!-- KARTU KONTAK PIC SITE WHATSAPP -->
+      <div class="card bg-dark border-secondary p-3 mb-3" id="picCardSection">
+        <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-user-shield me-2"></i>KONTAK PIC SITE</h6>
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <small class="text-muted d-block" style="font-size: 10px;">NAMA PIC LAPANGAN:</small>
+            <strong id="valPicName" class="text-white small">-</strong>
+          </div>
+          <a id="btnWaPic" href="#" target="_blank" class="btn btn-sm btn-success fw-bold px-3">
+            <i class="fa-brands fa-whatsapp me-1 fs-6"></i> Hubungi WA
+          </a>
+        </div>
+      </div>
+
+      <!-- KARTU LOG KUNJUNGAN TEKNISI -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-2"></i>LOG KUNJUNGAN TEKNISI</h6>
         <div class="mb-2"><small class="text-info fw-bold d-block">KUNJUNGAN TERAKHIR:</small><span id="valLastVisit" class="mono text-white small">-</span></div>
@@ -125,11 +142,13 @@
         </div>
       </div>
 
+      <!-- KARTU RADIUS STASIUN TERDEKAT -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-compass me-2"></i>RADIUS SITE TERDEKAT</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
+      <!-- KARTU LAPORAN GANGGUAN MATI (OFF) -->
       <div id="offReportSection" class="alert alert-danger bg-danger-subtle border-danger p-3 mb-3 display-none">
         <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>LAPORAN KONDISI MATI (BYPASS)</h6>
         <div class="mb-2"><small class="text-danger fw-bold d-block">TANGGAL LAPOR MATI:</small><span id="valOffDate" class="mono text-white small">-</span></div>
@@ -137,6 +156,7 @@
         <div><small class="text-danger fw-bold d-block">RINCIAN TROUBLESHOOT:</small><span id="valOffNotes" class="text-white small">-</span></div>
       </div>
 
+      <!-- FORM ACCORDION -->
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
           <h2 class="accordion-header"><button class="accordion-button collapsed bg-danger-subtle text-danger fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBypass"><i class="fa-solid fa-triangle-exclamation me-2"></i> Bypass Laporkan Alat Mati (Urgent)</button></h2>
@@ -209,7 +229,7 @@
     </div>
   </div>
 
-  <!-- JavaScript Libraries & App Script (Menggunakan relatif ./js/) -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./js/app.js"></script>
