@@ -44,26 +44,35 @@
       display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
     }
 
-    /* CONTAINER PETA DENGAN LAYOUT FLOATING */
+    /* CONTAINER PETA */
     .map-container { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-    #map { height: 80vh; min-height: 550px; width: 100%; z-index: 1; }
+    #map { height: 75vh; min-height: 480px; width: 100%; z-index: 1; }
 
-    /* FLOATING STATS GRID (ATAS PETA) */
-    .floating-stats-bar {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      z-index: 999;
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 8px;
-      pointer-events: none; /* Klik bisa tembus ke peta di celah kartu */
+    /* FLOATING STATS GRID (DESKTOP) */
+    @media (min-width: 992px) {
+      .floating-stats-bar {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 999;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 8px;
+        pointer-events: none;
+      }
+      .stats-floating-box {
+        position: absolute; 
+        top: 72px; 
+        left: 12px; 
+        z-index: 998; 
+        width: 300px; 
+      }
     }
 
     .stat-card-float {
       pointer-events: auto;
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
@@ -99,15 +108,10 @@
     .stat-title { font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; }
     .stat-val { font-size: 17px; font-weight: 800; color: #fff; line-height: 1.1; margin-top: 2px; }
 
-    /* FLOATING WIDGET REKAP STATISTIK (KIRI PETA) */
+    /* FLOATING WIDGET REKAP STATISTIK */
     .stats-floating-box {
-      position: absolute; 
-      top: 72px; 
-      left: 12px; 
-      z-index: 998; 
-      width: 300px; 
       max-width: calc(100% - 24px);
-      background: rgba(15, 23, 42, 0.88); 
+      background: rgba(15, 23, 42, 0.92); 
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-color); 
       border-radius: 10px; 
@@ -135,27 +139,35 @@
     .doc-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; }
     .doc-img-item { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
 
-    /* MEDIA QUERIES MOBILE ADAPTIF */
+    /* KHUSUS UNTUK LAYAR HP (MOBILE REFINEMENT) */
     @media (max-width: 991px) {
       .floating-stats-bar {
         display: flex !important;
         overflow-x: auto !important;
+        gap: 6px !important;
         padding-bottom: 4px;
+        margin-bottom: 8px;
         scrollbar-width: none;
       }
       .floating-stats-bar::-webkit-scrollbar { display: none; }
-      .stat-card-float { flex: 0 0 auto !important; width: 105px !important; }
-      .stats-floating-box { top: 62px; }
+      .stat-card-float { flex: 0 0 auto !important; width: 105px !important; padding: 6px 8px !important; }
+      
+      .stats-floating-box { 
+        position: absolute;
+        top: 10px; 
+        left: 10px;
+        z-index: 998;
+        width: 280px; 
+      }
       #map { height: 72vh; }
-    }
-
-    @media (max-width: 767px) {
+      
       .offcanvas-responsive {
         position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
         width: 100% !important; height: 82vh !important; border-top: 1px solid var(--border-color) !important;
         border-radius: 20px 20px 0 0;
       }
     }
+
     @media (min-width: 768px) {
       .offcanvas-responsive { width: 420px !important; }
     }
@@ -217,11 +229,23 @@
         </div>
       </div>
 
-      <!-- MAP CONTAINER DENGAN KARTU FLOATING TERPISAH -->
+      <!-- BARIS KARTU STATISTIK (MOBILE CARDS HORIZONTAL SCROLL) -->
+      <div class="floating-stats-bar d-lg-none">
+        <div class="stat-card-float card-all" onclick="resetFilter()"><div class="stat-title">TOTAL</div><div class="stat-val mono" id="count-total-m">0</div></div>
+        <div class="stat-card-float card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-title">SEISMO</div><div class="stat-val mono" id="count-seismo-m">0</div></div>
+        <div class="stat-card-float card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-title">WRSNG</div><div class="stat-val mono" id="count-wrsng-m">0</div></div>
+        <div class="stat-card-float card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-title">ACCEL</div><div class="stat-val mono" id="count-accel-m">0</div></div>
+        <div class="stat-card-float card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-title">INTEN</div><div class="stat-val mono" id="count-inten-m">0</div></div>
+        <div class="stat-card-float card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-title">TSUNAMI</div><div class="stat-val mono" id="count-tsunami-m">0</div></div>
+        <div class="stat-card-float card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-title">LIGHTNING</div><div class="stat-val mono" id="count-lightning-m">0</div></div>
+        <div class="stat-card-float card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-title">MAGNETO</div><div class="stat-val mono" id="count-magneto-m">0</div></div>
+      </div>
+
+      <!-- MAP CONTAINER -->
       <div class="map-container border border-secondary">
         
-        <!-- 8 KARTU STATISTIK FLOATING ATAS PETA -->
-        <div class="floating-stats-bar">
+        <!-- 8 KARTU STATISTIK FLOATING DESKTOP -->
+        <div class="floating-stats-bar d-none d-lg-grid">
           <div class="stat-card-float card-all" onclick="resetFilter()"><div class="stat-title">TOTAL</div><div class="stat-val mono" id="count-total">0</div></div>
           <div class="stat-card-float card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-title">SEISMO</div><div class="stat-val mono" id="count-seismo">0</div></div>
           <div class="stat-card-float card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-title">WRSNG</div><div class="stat-val mono" id="count-wrsng">0</div></div>
@@ -457,6 +481,11 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
+    function updateCountText(elementId, val) {
+      const el = document.getElementById(elementId);
+      if (el) el.innerText = val;
+    }
+
     async function loadStationsFromDatabase() {
       let { data: stasiun } = await supabaseClient.from('stasiun').select('*');
       let { data: viewStats } = await supabaseClient.from('v_statistik_aloptama').select('*');
@@ -495,17 +524,19 @@
         allMarkers.push({ title: item.nama.toLowerCase(), marker, data: item, group: groups[item.kategori] });
       });
 
-      document.getElementById('count-total').innerText = counts.total;
-      document.getElementById('tbl-total').innerText = counts.total;
-      document.getElementById('tbl-up').innerText = counts.up;
-      document.getElementById('tbl-down').innerText = counts.down;
-      document.getElementById('tbl-priority-total').innerText = `${counts.down} SITE`;
-      document.getElementById('tbl-percent').innerText = `${((counts.up / counts.total) * 100).toFixed(1)}%`;
+      updateCountText('count-total', counts.total);
+      updateCountText('count-total-m', counts.total);
+      updateCountText('tbl-total', counts.total);
+      updateCountText('tbl-up', counts.up);
+      updateCountText('tbl-down', counts.down);
+      updateCountText('tbl-priority-total', `${counts.down} SITE`);
+      updateCountText('tbl-percent', `${((counts.up / counts.total) * 100).toFixed(1)}%`);
 
       const tbody = document.getElementById('tbl-detail-rows'); tbody.innerHTML = '';
       Object.keys(catMap).forEach(k => {
         const stat = (viewStats || []).find(v => v.kategori === k) || { total: 0, up: 0, down: 0, prio: 0, active_pct: 0 };
-        document.getElementById(`count-${k}`).innerText = stat.total || 0;
+        updateCountText(`count-${k}`, stat.total || 0);
+        updateCountText(`count-${k}-m`, stat.total || 0);
         tbody.innerHTML += `<tr><td>${catMap[k]}</td><td>${stat.total||0}</td><td class="text-success">${stat.up||0}</td><td class="text-danger">${stat.down||0}</td><td class="text-danger">${stat.prio||0}</td><td class="text-info">${stat.active_pct||0}%</td></tr>`;
       });
     }
