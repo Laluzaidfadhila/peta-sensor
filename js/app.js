@@ -376,7 +376,7 @@ function toggleStatsBox() {
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL EDITOR DATA ALOPTAMA (DISESUAIKAN AGAR BEBAS EROR ID)
+// MODUL EDITOR DATA ALOPTAMA (NAMA ALAT PERSIS DOKUMEN PDF BMKG)
 // ============================================================
 async function renderAloptamaEditorTable() {
   const tbody = document.getElementById('editorAloptamaBody');
@@ -393,9 +393,8 @@ async function renderAloptamaEditorTable() {
   tbody.innerHTML = '';
 
   items.forEach((item) => {
-    const displayName = item.nama_alat_site 
-      ? (item.lokasi ? `${item.nama_alat_site} (${item.lokasi})` : item.nama_alat_site) 
-      : (item.lokasi || '-');
+    // Tampilkan nama_alat_site jika ada, jika NULL tampilkan lokasi (persis format PDF BMKG)
+    const displayName = item.nama_alat_site || item.lokasi || '-';
 
     tbody.innerHTML += `
       <tr>
@@ -429,7 +428,6 @@ async function renderAloptamaEditorTable() {
   });
 }
 
-// BATCH UPDATE PER BARIS (MENGHINDARI CONFLICT GENERATED ALWAYS AS IDENTITY)
 async function saveAloptamaBatchUpdates() {
   if (!localAloptamaCache.length) return;
 
@@ -470,7 +468,7 @@ async function saveAloptamaBatchUpdates() {
 }
 
 // ============================================================
-// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS DARI DATABASE data_aloptama)
+// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS & TATA LETAK PERSIS PDF)
 // ============================================================
 async function generateAloptamaPDF(e) {
   e.preventDefault();
@@ -506,7 +504,7 @@ async function generateAloptamaPDF(e) {
   let catIndex = 1;
 
   for (const [kategoriName, rows] of Object.entries(groupedData)) {
-    let isSiteTable = kategoriName.toLowerCase().includes('site') || kategoriName.toLowerCase().includes('wrs');
+    let isSiteTable = kategoriName.toLowerCase().includes('site') || kategoriName.toLowerCase().includes('wrs') || kategoriName.toLowerCase().includes('realshake');
     
     htmlTables += `
       <div style="margin-top: 15px; page-break-inside: avoid;">
@@ -518,9 +516,10 @@ async function generateAloptamaPDF(e) {
             <tr style="background-color: #f2f2f2; text-align: center;">
               <th style="border: 1px solid #000; padding: 4px; width: 30px;">No</th>
               ${isSiteTable ? `
-                <th style="border: 1px solid #000; padding: 4px;">Nama Site / Lokasi</th>
+                ${rows[0].nama_alat_site ? `<th style="border: 1px solid #000; padding: 4px;">Nama Site</th>` : ''}
+                <th style="border: 1px solid #000; padding: 4px;">Lokasi / Instansi</th>
                 <th style="border: 1px solid #000; padding: 4px;">Kabupaten / Kota</th>
-                <th style="border: 1px solid #000; padding: 4px;">Tipe Alat</th>
+                ${rows[0].tipe ? `<th style="border: 1px solid #000; padding: 4px;">Tipe Alat</th>` : ''}
                 <th style="border: 1px solid #000; padding: 4px;">Kondisi</th>
                 <th style="border: 1px solid #000; padding: 4px;">Keterangan</th>
               ` : `
@@ -539,9 +538,10 @@ async function generateAloptamaPDF(e) {
               <tr>
                 <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.no_alat || (i + 1)}</td>
                 ${isSiteTable ? `
-                  <td style="border: 1px solid #000; padding: 4px;">${r.nama_alat_site || r.lokasi || '-'} ${r.nama_alat_site && r.lokasi ? `<br><small style="color:#555;">${r.lokasi}</small>` : ''}</td>
+                  ${r.nama_alat_site ? `<td style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold;">${r.nama_alat_site}</td>` : ''}
+                  <td style="border: 1px solid #000; padding: 4px;">${r.lokasi || '-'}</td>
                   <td style="border: 1px solid #000; padding: 4px;">${r.kabupaten_kota || '-'}</td>
-                  <td style="border: 1px solid #000; padding: 4px;">${r.tipe || '-'}</td>
+                  ${r.tipe ? `<td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.tipe}</td>` : ''}
                   <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.kondisi || '-'}</td>
                   <td style="border: 1px solid #000; padding: 4px;">${r.keterangan || '-'}</td>
                 ` : `
