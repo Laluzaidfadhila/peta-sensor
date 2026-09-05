@@ -59,7 +59,15 @@ body { background-color: var(--bg-dark); color: #f3f4f6; overflow-x: hidden; }
 .display-none { display: none; }
 .cursor-pointer { cursor: pointer; }
 .max-h-180 { max-height: 180px; overflow-y: auto; }
-.max-h-80 { max-height: 80vh; object-fit: contain; }
+.max-h-80 { max-height: 65vh; overflow-y: auto; }
+
+.style-editor-table input {
+  font-size: 11px !important;
+}
+.style-editor-table input:focus {
+  border-color: var(--accent-neon) !important;
+  box-shadow: 0 0 5px rgba(56, 189, 248, 0.4) !important;
+}
 
 @media (max-width: 991px) {
   .floating-stats-bar { display: flex !important; overflow-x: auto !important; gap: 6px !important; padding-bottom: 2px; scrollbar-width: none; }
