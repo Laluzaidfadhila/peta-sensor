@@ -69,6 +69,12 @@
           <button class="btn btn-sm btn-outline-info fw-semibold" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya</button>
           <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="planMultiSiteRoute()"><i class="fa-solid fa-route me-1"></i> Multi-Site (OFF)</button>
           <button class="btn btn-sm btn-info fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#expeditionModal"><i class="fa-solid fa-map-location-dot me-1"></i> Ekspedisi</button>
+          
+          <!-- TOMBOL CETAK LAPORAN ALOPTAMA PDF -->
+          <button class="btn btn-sm btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#pdfReportModal">
+            <i class="fa-solid fa-file-pdf me-1"></i> Laporan Aloptama (PDF)
+          </button>
+
           <button class="btn btn-sm btn-outline-secondary fw-semibold" onclick="resetFilter()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
         </div>
       </div>
@@ -193,7 +199,7 @@
     </div>
   </div>
 
-  <!-- MODAL EKSPEDISI & LIGHTBOX -->
+  <!-- MODAL EKSPEDISI -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
@@ -220,6 +226,69 @@
     </div>
   </div>
 
+  <!-- MODAL PARAMETER CETAK LAPORAN ALOPTAMA PDF -->
+  <div class="modal fade" id="pdfReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-dark border-secondary text-white">
+        <div class="modal-header border-secondary py-2 px-3">
+          <h6 class="modal-title text-danger fw-bold"><i class="fa-solid fa-file-pdf me-2"></i>Parameter Laporan Kondisi Aloptama (PDF)</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+          <form onsubmit="generateAloptamaPDF(event)">
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">Nomor Surat / Laporan</label>
+                <input type="text" id="pdfNoSurat" class="form-control form-control-sm bg-panel border-secondary text-white" value="e.B/GF.02.02/027/KTSI/VIII/2026" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">Per Tanggal Laporan</label>
+                <input type="date" id="pdfTanggal" class="form-control form-control-sm bg-panel border-secondary text-white" value="2026-08-31" required>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">Jumlah Lampiran</label>
+                <input type="text" id="pdfLampiran" class="form-control form-control-sm bg-panel border-secondary text-white" value="9 (sembilan) lembar" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">Tujuan Yth.</label>
+                <input type="text" id="pdfTujuan" class="form-control form-control-sm bg-panel border-secondary text-white" value="Deputi Bidang Geofisika BMKG" required>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">Nama Kepala Stasiun / Penandatangan</label>
+                <input type="text" id="pdfNamaKepala" class="form-control form-control-sm bg-panel border-secondary text-white" value="Rasmid" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label text-muted small fw-bold">NIP Kepala Stasiun (Opsional)</label>
+                <input type="text" id="pdfNipKepala" class="form-control form-control-sm bg-panel border-secondary text-white" placeholder="1980xxxxxxxxxxxxxx">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-muted small fw-bold">Daftar Tembusan (Pisahkan dengan Koma)</label>
+              <textarea id="pdfTembusan" class="form-control form-control-sm bg-panel border-secondary text-white" rows="3">Deputi Bidang Infrastruktur MKG, Direktur Gempabumi dan Tsunami BMKG, Direktur Seismologi Teknik Geopotensial dan Tanda Waktu BMKG, Kepala Balai Besar MKG Wilayah I Medan, Arsip</textarea>
+            </div>
+
+            <div class="alert alert-info bg-info-subtle border-info text-info p-2 small mb-3">
+              <i class="fa-solid fa-info-circle me-1"></i> Seluruh data inventaris (10 Kategori Alat) akan ditarik secara otomatis dari tabel database <strong>public.aloptama</strong>.
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-sm btn-danger fw-bold"><i class="fa-solid fa-print me-1"></i> Generate & Cetak PDF</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX IMAGE MODAL -->
   <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-dark border-secondary">
