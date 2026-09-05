@@ -16,7 +16,7 @@
     :root {
       --bg-dark: #090d16;
       --panel-bg: #111827;
-      --border-color: #374151;
+      --border-color: rgba(255, 255, 255, 0.12);
       --accent-neon: #38bdf8;
       --seismo-color: #2563eb;
       --wrsng-color: #dc2626;
@@ -44,14 +44,49 @@
       display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
     }
 
-    /* KARTU STATISTIK GRID & SCROLL MOBILE */
-    .stat-card {
-      position: relative; overflow: hidden; cursor: pointer;
-      transition: all 0.2s ease-in-out; border-radius: 10px; min-width: 100px;
+    /* CONTAINER PETA DENGAN LAYOUT FLOATING */
+    .map-container { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    #map { height: 80vh; min-height: 550px; width: 100%; z-index: 1; }
+
+    /* FLOATING STATS GRID (ATAS PETA) */
+    .floating-stats-bar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 999;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      pointer-events: none; /* Klik bisa tembus ke peta di celah kartu */
     }
-    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-neon) !important; }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
-    
+
+    .stat-card-float {
+      pointer-events: auto;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .stat-card-float:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-neon) !important;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25);
+    }
+
+    .stat-card-float::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 3.5px; height: 100%;
+    }
+
     .card-all::before { background: var(--accent-neon); }
     .card-seismo::before { background: var(--seismo-color); }
     .card-wrsng::before { background: var(--wrsng-color); }
@@ -61,29 +96,30 @@
     .card-lightning::before { background: var(--lightning-color); }
     .card-magneto::before { background: var(--magneto-color); }
 
-    /* PETA & FLOATING WIDGET OPTIMASI */
-    .map-container { position: relative; border-radius: 12px; overflow: hidden; }
-    #map { height: 68vh; min-height: 420px; width: 100%; }
+    .stat-title { font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; }
+    .stat-val { font-size: 17px; font-weight: 800; color: #fff; line-height: 1.1; margin-top: 2px; }
 
+    /* FLOATING WIDGET REKAP STATISTIK (KIRI PETA) */
     .stats-floating-box {
       position: absolute; 
-      top: 10px; 
-      left: 10px; 
-      z-index: 999; 
-      width: 290px; 
-      max-width: calc(100% - 20px);
-      background: rgba(17, 24, 39, 0.94); 
-      backdrop-filter: blur(8px);
+      top: 72px; 
+      left: 12px; 
+      z-index: 998; 
+      width: 300px; 
+      max-width: calc(100% - 24px);
+      background: rgba(15, 23, 42, 0.88); 
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border-color); 
       border-radius: 10px; 
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
       overflow: hidden;
     }
+
     .stats-box-header { background: rgba(11, 19, 32, 0.95); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-    .stats-box-body { padding: 10px; font-size: 11px; max-height: 350px; overflow-y: auto; }
+    .stats-box-body { padding: 10px; font-size: 11px; max-height: 380px; overflow-y: auto; }
 
     .stats-summary-table, .stats-detail-table { width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 8px; }
-    .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.25); }
+    .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.3); }
     .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 5px 4px; border: 1px solid var(--border-color); }
 
     /* MARKER INSTRUMEN */
@@ -99,15 +135,21 @@
     .doc-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; }
     .doc-img-item { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
 
-    /* LAYOUT KHUSUS HP/MOBILE */
-    @media (max-width: 767px) {
-      .mobile-scroll-cards {
-        display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important;
-        padding-bottom: 4px; scrollbar-width: none;
+    /* MEDIA QUERIES MOBILE ADAPTIF */
+    @media (max-width: 991px) {
+      .floating-stats-bar {
+        display: flex !important;
+        overflow-x: auto !important;
+        padding-bottom: 4px;
+        scrollbar-width: none;
       }
-      .mobile-scroll-cards::-webkit-scrollbar { display: none; }
-      .mobile-scroll-cards .col { flex: 0 0 auto !important; width: 110px !important; }
-      #map { height: 60vh; }
+      .floating-stats-bar::-webkit-scrollbar { display: none; }
+      .stat-card-float { flex: 0 0 auto !important; width: 105px !important; }
+      .stats-floating-box { top: 62px; }
+      #map { height: 72vh; }
+    }
+
+    @media (max-width: 767px) {
       .offcanvas-responsive {
         position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
         width: 100% !important; height: 82vh !important; border-top: 1px solid var(--border-color) !important;
@@ -159,12 +201,12 @@
     </nav>
 
     <div class="container-fluid p-2 p-md-3">
-      <!-- CONTROL BAR -->
+      <!-- CONTROL BAR HARMONIS -->
       <div class="row g-2 mb-2">
         <div class="col-12 col-md">
           <div class="input-group input-group-sm">
             <span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span>
-            <input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID..." onkeyup="searchStation()">
+            <input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
           </div>
         </div>
         <div class="col-auto d-flex gap-1 flex-wrap">
@@ -175,25 +217,27 @@
         </div>
       </div>
 
-      <!-- KARTU STATISTIK HP RESPONSIVE HORIZONTAL SCROLL -->
-      <div class="row row-cols-2 row-cols-sm-4 row-cols-xl-8 g-2 mb-2 mobile-scroll-cards">
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-all" onclick="resetFilter()"><small class="text-muted fw-bold">TOTAL</small><div class="fs-5 fw-bold mono text-white" id="count-total">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><small class="text-muted fw-bold">SEISMO</small><div class="fs-5 fw-bold mono text-white" id="count-seismo">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-wrsng" onclick="toggleLayerFilter('wrsng')"><small class="text-muted fw-bold">WRSNG</small><div class="fs-5 fw-bold mono text-white" id="count-wrsng">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-accel" onclick="toggleLayerFilter('accel')"><small class="text-muted fw-bold">ACCEL</small><div class="fs-5 fw-bold mono text-white" id="count-accel">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-inten" onclick="toggleLayerFilter('inten')"><small class="text-muted fw-bold">INTEN</small><div class="fs-5 fw-bold mono text-white" id="count-inten">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-tsunami" onclick="toggleLayerFilter('tsunami')"><small class="text-muted fw-bold">TSUNAMI</small><div class="fs-5 fw-bold mono text-white" id="count-tsunami">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-lightning" onclick="toggleLayerFilter('lightning')"><small class="text-muted fw-bold">LIGHTNING</small><div class="fs-5 fw-bold mono text-white" id="count-lightning">0</div></div></div>
-        <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-magneto" onclick="toggleLayerFilter('magneto')"><small class="text-muted fw-bold">MAGNETO</small><div class="fs-5 fw-bold mono text-white" id="count-magneto">0</div></div></div>
-      </div>
-
+      <!-- MAP CONTAINER DENGAN KARTU FLOATING TERPISAH -->
       <div class="map-container border border-secondary">
+        
+        <!-- 8 KARTU STATISTIK FLOATING ATAS PETA -->
+        <div class="floating-stats-bar">
+          <div class="stat-card-float card-all" onclick="resetFilter()"><div class="stat-title">TOTAL</div><div class="stat-val mono" id="count-total">0</div></div>
+          <div class="stat-card-float card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-title">SEISMO</div><div class="stat-val mono" id="count-seismo">0</div></div>
+          <div class="stat-card-float card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-title">WRSNG</div><div class="stat-val mono" id="count-wrsng">0</div></div>
+          <div class="stat-card-float card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-title">ACCEL</div><div class="stat-val mono" id="count-accel">0</div></div>
+          <div class="stat-card-float card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-title">INTEN</div><div class="stat-val mono" id="count-inten">0</div></div>
+          <div class="stat-card-float card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-title">TSUNAMI</div><div class="stat-val mono" id="count-tsunami">0</div></div>
+          <div class="stat-card-float card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-title">LIGHTNING</div><div class="stat-val mono" id="count-lightning">0</div></div>
+          <div class="stat-card-float card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-title">MAGNETO</div><div class="stat-val mono" id="count-magneto">0</div></div>
+        </div>
+
+        <!-- FLOATING WIDGET REKAP STATISTIK -->
         <div class="stats-floating-box">
           <div class="stats-box-header">
             <span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span>
             <i id="statsToggleIcon" class="fa-solid fa-chevron-down text-muted" style="cursor:pointer;" onclick="toggleStatsBox()"></i>
           </div>
-          <!-- AUTOMATICALLY COLLAPSED AT STARTUP ON MOBILE -->
           <div id="statsBoxBody" class="stats-box-body" style="display: none;">
             <table class="stats-summary-table mono">
               <thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead>
@@ -228,6 +272,7 @@
       <h5 id="panelTitle" class="fw-bold mb-1">Nama Stasiun</h5>
       <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1 text-info"></i> <span id="panelCoords">0, 0</span></p>
 
+      <!-- KARTU LOG KUNJUNGAN FISIK -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-2"></i>LOG KUNJUNGAN TEKNISI</h6>
         <div class="mb-2"><small class="text-info fw-bold d-block">KUNJUNGAN TERAKHIR:</small><span id="valLastVisit" class="mono text-white small">-</span></div>
@@ -241,11 +286,13 @@
         </div>
       </div>
 
+      <!-- KARTU RADIUS STASIUN TERDEKAT -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-compass me-2"></i>RADIUS SITE TERDEKAT</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
+      <!-- KARTU LAPORAN GANGGUAN MATI (OFF) -->
       <div id="offReportSection" class="alert alert-danger bg-danger-subtle border-danger p-3 mb-3" style="display: none;">
         <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>LAPORAN KONDISI MATI (BYPASS)</h6>
         <div class="mb-2"><small class="text-danger fw-bold d-block">TANGGAL LAPOR MATI:</small><span id="valOffDate" class="mono text-white small">-</span></div>
@@ -253,6 +300,7 @@
         <div><small class="text-danger fw-bold d-block">RINCIAN TROUBLESHOOT:</small><span id="valOffNotes" class="text-white small">-</span></div>
       </div>
 
+      <!-- ACCORDION FORM ENTRY DATA -->
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
           <h2 class="accordion-header">
@@ -376,8 +424,7 @@
       lightboxModalObj = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
       expeditionModalObj = new bootstrap.Modal(document.getElementById('expeditionModal'));
 
-      // PENGATURAN OTOMATIS COLLAPSE WIDGET STATISTIK DI DESKTOP DAN HP
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 992) {
         document.getElementById('statsBoxBody').style.display = 'block';
         document.getElementById('statsToggleIcon').className = 'fa-solid fa-chevron-up text-muted';
       }
