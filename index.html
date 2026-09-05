@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Monitoring Aloptama Stasiun - BMKG Deli Serdang</title>
+  <title>Monitoring Aloptama Stasiun</title>
 
   <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,107 +14,42 @@
 
   <style>
     :root {
-      --bg-dark: #090d16;
-      --panel-bg: #111827;
-      --border-color: rgba(255, 255, 255, 0.12);
-      --accent-neon: #38bdf8;
-      --seismo-color: #2563eb;
-      --wrsng-color: #dc2626;
-      --accel-color: #16a34a;
-      --inten-color: #d97706;
-      --tsunami-color: #0891b2;
-      --lightning-color: #7c3aed;
-      --magneto-color: #0d9488;
+      --bg-dark: #090d16; --panel-bg: #111827; --border-color: rgba(255, 255, 255, 0.12); --accent-neon: #38bdf8;
     }
-
-    * {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-user-select: none; user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    * { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
     .mono { font-family: 'JetBrains Mono', monospace; }
     body { background-color: var(--bg-dark); color: #f3f4f6; overflow-x: hidden; }
     .bg-panel { background-color: var(--panel-bg) !important; }
 
-    /* LOGIN OVERLAY */
-    #loginScreen {
-      position: fixed; inset: 0;
-      background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%);
-      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
-    }
-
-    /* CONTAINER PETA */
+    #loginScreen { position: fixed; inset: 0; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
+    
     .map-container { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-    #map { height: 78vh; min-height: 520px; width: 100%; z-index: 1; }
+    #map { height: 75vh; min-height: 480px; width: 100%; z-index: 1; }
 
-    /* FLOATING STATS BAR (MELAYANG DI ATAS PETA UNTUK SEMUA UKURAN LAYAR) */
+    /* DYNAMIC FLOATING STATS BAR */
     .floating-stats-bar {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      z-index: 999;
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 8px;
-      pointer-events: none;
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 999;
+      display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; pointer-events: none;
     }
-
+    .floating-stats-bar::-webkit-scrollbar { display: none; }
     .stat-card-float {
-      pointer-events: auto;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px 10px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-      transition: all 0.2s ease-in-out;
+      pointer-events: auto; flex: 0 0 auto; width: 100px;
+      background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 8px; cursor: pointer;
+      position: relative; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); transition: all 0.2s ease-in-out;
     }
-
-    .stat-card-float:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent-neon) !important;
-      background: rgba(15, 23, 42, 0.95);
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25);
-    }
-
-    .stat-card-float::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 3.5px; height: 100%;
-    }
-
-    .card-all::before { background: var(--accent-neon); }
-    .card-seismo::before { background: var(--seismo-color); }
-    .card-wrsng::before { background: var(--wrsng-color); }
-    .card-accel::before { background: var(--accel-color); }
-    .card-inten::before { background: var(--inten-color); }
-    .card-tsunami::before { background: var(--tsunami-color); }
-    .card-lightning::before { background: var(--lightning-color); }
-    .card-magneto::before { background: var(--magneto-color); }
+    .stat-card-float:hover { transform: translateY(-2px); border-color: var(--accent-neon) !important; background: rgba(15, 23, 42, 0.95); }
+    .stat-card-float::before { content: ''; position: absolute; top: 0; left: 0; width: 3.5px; height: 100%; }
 
     .stat-title { font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.5px; }
     .stat-val { font-size: 16px; font-weight: 800; color: #fff; line-height: 1.1; margin-top: 2px; }
 
-    /* FLOATING WIDGET REKAP STATISTIK */
+    /* FLOATING REKAP BOX */
     .stats-floating-box {
-      position: absolute;
-      top: 72px;
-      left: 10px;
-      z-index: 998;
-      width: 290px;
-      max-width: calc(100% - 20px);
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-      overflow: hidden;
+      position: absolute; top: 66px; left: 10px; z-index: 998; width: 260px; max-width: calc(100% - 20px);
+      background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); overflow: hidden;
     }
-
     .stats-box-header { background: rgba(11, 19, 32, 0.95); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
     .stats-box-body { padding: 10px; font-size: 11px; max-height: 380px; overflow-y: auto; }
 
@@ -122,47 +57,20 @@
     .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.3); }
     .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 5px 4px; border: 1px solid var(--border-color); }
 
-    /* MARKER INSTRUMEN */
+    /* MARKER GENERATOR */
     .custom-marker { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-    .marker-triangle { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid var(--seismo-color); filter: drop-shadow(0 0 3px var(--seismo-color)); }
-    .marker-computer { background: var(--wrsng-color); color: white; width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 6px var(--wrsng-color); }
-    .marker-circle { background: var(--accel-color); width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px var(--accel-color); }
-    .marker-star { color: var(--inten-color); font-size: 22px; filter: drop-shadow(0 0 3px var(--inten-color)); }
-    .marker-anchor { background: var(--tsunami-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--tsunami-color); }
-    .marker-bolt { background: var(--lightning-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--lightning-color); }
-    .marker-box { background: var(--magneto-color); color: white; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--magneto-color); }
-
     .doc-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; }
     .doc-img-item { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
 
-    /* PENYESUAIAN FLOATING KHUSUS HP (TIDAK BERTUMPUK) */
-    @media (max-width: 991px) {
-      .floating-stats-bar {
-        display: flex !important;
-        overflow-x: auto !important;
-        gap: 6px !important;
-        padding-bottom: 2px;
-        scrollbar-width: none;
-      }
-      .floating-stats-bar::-webkit-scrollbar { display: none; }
-      .stat-card-float { flex: 0 0 auto !important; width: 100px !important; padding: 6px 8px !important; }
-      
-      /* Geser Widget Dropdown Ke Bawah Kartu Floating di HP */
-      .stats-floating-box { 
-        top: 66px; 
-        width: 250px; 
-      }
-      
-      .offcanvas-responsive {
-        position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
-        width: 100% !important; height: 82vh !important; border-top: 1px solid var(--border-color) !important;
-        border-radius: 20px 20px 0 0;
-      }
+    @media (min-width: 992px) {
+      .floating-stats-bar { display: grid; grid-template-columns: repeat(8, 1fr); right: 10px; overflow-x: visible; }
+      .stat-card-float { width: 100%; padding: 8px 10px; }
+      .stats-floating-box { top: 72px; width: 290px; }
     }
-
-    @media (min-width: 768px) {
-      .offcanvas-responsive { width: 420px !important; }
+    @media (max-width: 767px) {
+      .offcanvas-responsive { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; width: 100% !important; height: 82vh !important; border-top: 1px solid var(--border-color) !important; border-radius: 20px 20px 0 0; }
     }
+    @media (min-width: 768px) { .offcanvas-responsive { width: 420px !important; } }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -172,18 +80,12 @@
     <div class="card bg-panel border-secondary text-white p-4 shadow-lg" style="width: 100%; max-width: 380px; border-radius: 16px;">
       <div class="text-center mb-4">
         <i class="fa-solid fa-microchip text-info fs-1"></i>
-        <h5 class="fw-bold text-info mt-2 mb-1">FIELD OPS COMMAND CENTER</h5>
-        <small class="mono text-muted">STASIUN GEOFISIKA KELAS I DELI SERDANG</small>
+        <h5 class="fw-bold text-info mt-2 mb-1" id="loginAppTitle">FIELD OPS COMMAND CENTER</h5>
+        <small class="mono text-muted" id="loginAppSubTitle">STASIUN GEOFISIKA KELAS I DELI SERDANG</small>
       </div>
       <form onsubmit="handleLogin(event)">
-        <div class="mb-3">
-          <label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label>
-          <input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required>
-        </div>
-        <div class="mb-4">
-          <label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label>
-          <input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required>
-        </div>
+        <div class="mb-3"><label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label><input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required></div>
+        <div class="mb-4"><label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label><input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required></div>
         <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase py-2"><i class="fa-solid fa-shield-halved me-1"></i> Autentikasi Masuk</button>
       </form>
     </div>
@@ -196,8 +98,8 @@
         <div class="d-flex align-items-center gap-2">
           <i class="fa-solid fa-tower-observation text-info fs-4"></i>
           <div>
-            <h6 class="fw-bold text-white mb-0 fs-6">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6>
-            <small class="mono text-info d-block" style="font-size: 10px;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small>
+            <h6 class="fw-bold text-white mb-0 fs-6" id="navAppTitle">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6>
+            <small class="mono text-info d-block" style="font-size: 10px;" id="navAppSubTitle"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small>
           </div>
         </div>
         <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="handleLogout()"><i class="fa-solid fa-power-off me-1"></i> KELUAR</button>
@@ -205,7 +107,7 @@
     </nav>
 
     <div class="container-fluid p-2 p-md-3">
-      <!-- CONTROL BAR HARMONIS -->
+      <!-- CONTROL BAR -->
       <div class="row g-2 mb-2">
         <div class="col-12 col-md">
           <div class="input-group input-group-sm">
@@ -224,19 +126,10 @@
       <!-- MAP CONTAINER DENGAN DUA ELEMEN FLOATING -->
       <div class="map-container border border-secondary">
         
-        <!-- 1. FLOATING STATS BAR (MELAYANG DI DALAM PETA) -->
-        <div class="floating-stats-bar">
-          <div class="stat-card-float card-all" onclick="resetFilter()"><div class="stat-title">TOTAL</div><div class="stat-val mono" id="count-total">0</div></div>
-          <div class="stat-card-float card-seismo" onclick="toggleLayerFilter('seismo')"><div class="stat-title">SEISMO</div><div class="stat-val mono" id="count-seismo">0</div></div>
-          <div class="stat-card-float card-wrsng" onclick="toggleLayerFilter('wrsng')"><div class="stat-title">WRSNG</div><div class="stat-val mono" id="count-wrsng">0</div></div>
-          <div class="stat-card-float card-accel" onclick="toggleLayerFilter('accel')"><div class="stat-title">ACCEL</div><div class="stat-val mono" id="count-accel">0</div></div>
-          <div class="stat-card-float card-inten" onclick="toggleLayerFilter('inten')"><div class="stat-title">INTEN</div><div class="stat-val mono" id="count-inten">0</div></div>
-          <div class="stat-card-float card-tsunami" onclick="toggleLayerFilter('tsunami')"><div class="stat-title">TSUNAMI</div><div class="stat-val mono" id="count-tsunami">0</div></div>
-          <div class="stat-card-float card-lightning" onclick="toggleLayerFilter('lightning')"><div class="stat-title">LIGHTNING</div><div class="stat-val mono" id="count-lightning">0</div></div>
-          <div class="stat-card-float card-magneto" onclick="toggleLayerFilter('magneto')"><div class="stat-title">MAGNETO</div><div class="stat-val mono" id="count-magneto">0</div></div>
-        </div>
+        <!-- FLOATING STATS BAR (GENERATED DINAMIS DARI DATABASE) -->
+        <div class="floating-stats-bar" id="floatingStatsContainer"></div>
 
-        <!-- 2. FLOATING WIDGET REKAP STATISTIK (DI BAWAH KARTU FLOATING) -->
+        <!-- FLOATING WIDGET REKAP STATISTIK -->
         <div class="stats-floating-box">
           <div class="stats-box-header">
             <span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span>
@@ -276,7 +169,6 @@
       <h5 id="panelTitle" class="fw-bold mb-1">Nama Stasiun</h5>
       <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1 text-info"></i> <span id="panelCoords">0, 0</span></p>
 
-      <!-- KARTU LOG KUNJUNGAN FISIK -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-2"></i>LOG KUNJUNGAN TEKNISI</h6>
         <div class="mb-2"><small class="text-info fw-bold d-block">KUNJUNGAN TERAKHIR:</small><span id="valLastVisit" class="mono text-white small">-</span></div>
@@ -290,13 +182,11 @@
         </div>
       </div>
 
-      <!-- KARTU RADIUS STASIUN TERDEKAT -->
       <div class="card bg-dark border-secondary p-3 mb-3">
         <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-compass me-2"></i>RADIUS SITE TERDEKAT</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
-      <!-- KARTU LAPORAN GANGGUAN MATI (OFF) -->
       <div id="offReportSection" class="alert alert-danger bg-danger-subtle border-danger p-3 mb-3" style="display: none;">
         <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>LAPORAN KONDISI MATI (BYPASS)</h6>
         <div class="mb-2"><small class="text-danger fw-bold d-block">TANGGAL LAPOR MATI:</small><span id="valOffDate" class="mono text-white small">-</span></div>
@@ -304,7 +194,6 @@
         <div><small class="text-danger fw-bold d-block">RINCIAN TROUBLESHOOT:</small><span id="valOffNotes" class="text-white small">-</span></div>
       </div>
 
-      <!-- ACCORDION FORM ENTRY DATA -->
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
           <h2 class="accordion-header">
@@ -317,14 +206,7 @@
               <form onsubmit="saveBypassOffReport(event)">
                 <div class="mb-2">
                   <label class="form-label text-muted small fw-bold">Kategori Troubleshoot</label>
-                  <select id="bypassReason" class="form-select form-select-sm bg-panel border-secondary text-white" required>
-                    <option value="Kendala Power / Solar Cell / Baterai Drop">Kendala Power / Solar Cell / Baterai Drop</option>
-                    <option value="Gangguan Jaringan / Router Modem Down">Gangguan Jaringan / Router Modem Down</option>
-                    <option value="Kerusakan Sensor / Digitizer">Kerusakan Sensor / Digitizer</option>
-                    <option value="Faktor Cuaca Buruk / Tersambar Petir">Faktor Cuaca Buruk / Tersambar Petir</option>
-                    <option value="Lokasi Tidak Terjangkau / Bencana Alam">Lokasi Tidak Terjangkau / Bencana Alam</option>
-                    <option value="Penyebab Lainnya">Lainnya</option>
-                  </select>
+                  <select id="bypassReason" class="form-select form-select-sm bg-panel border-secondary text-white" required></select>
                 </div>
                 <div class="mb-3">
                   <label class="form-label text-muted small fw-bold">Rincian Troubleshoot</label>
@@ -371,11 +253,7 @@
           <div class="mb-3"><label class="form-label text-muted small fw-bold">1. Titik Awal Keberangkatan</label><input type="text" class="form-control form-control-sm bg-panel border-secondary text-info fw-bold" value="📍 Lokasi GPS Teknisi Lapangan Saat Ini" readonly></div>
           <div class="mb-3"><label class="form-label text-muted small fw-bold">2. Pilih Stasiun Akhir Tujuan Utama</label><select id="selectDestinationSite" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()"></select></div>
           <div class="mb-3"><label class="form-label text-muted small fw-bold">3. Batas Radius Stasiun Singgah (Koridor Line)</label>
-            <select id="selectCorridorRadius" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()">
-              <option value="25">Radius 25 km dari Jalur Lintasan</option>
-              <option value="50" selected>Radius 50 km dari Jalur Lintasan</option>
-              <option value="75">Radius 75 km dari Jalur Lintasan</option>
-            </select>
+            <select id="selectCorridorRadius" class="form-select form-select-sm bg-panel border-secondary text-white" onchange="calculateExpeditionRoute()"></select>
           </div>
           <div class="mb-3"><label class="form-label text-muted small fw-bold text-info"><i class="fa-solid fa-plus-circle me-1"></i> Tambah Site Kunjungan Manual (Opsional)</label>
             <div class="input-group input-group-sm"><select id="selectManualSite" class="form-select bg-panel border-secondary text-white"></select><button class="btn btn-outline-info fw-bold" type="button" onclick="addManualSiteToRoute()">+ Sisipkan</button></div>
@@ -419,9 +297,8 @@
 
     let map, activeStation = null, userLocationMarker = null, userAccuracyCircle = null, userCoords = null;
     let rawStationData = [], allMarkers = [], groups = {}, currentCorridorSites = [];
+    let masterCategories = {}, masterConfigs = {}, excludedSitesList = [];
     let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, expeditionGoogleMapsUrl = "";
-
-    const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
     document.addEventListener('DOMContentLoaded', async () => {
       offcanvasObj = new bootstrap.Offcanvas(document.getElementById('detailOffcanvas'));
@@ -437,9 +314,59 @@
       if (session) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('appScreen').style.display = 'block';
-        initMap(); loadStationsFromDatabase();
+        await loadDatabaseMasterData();
+        initMap(); 
+        loadStationsFromDatabase();
       }
     });
+
+    // LOAD ALL MASTER DATA & CONFIGS DINAMIS DARI SUPABASE
+    async function loadDatabaseMasterData() {
+      // 1. App Configs
+      let { data: configs } = await supabaseClient.from('app_config').select('*');
+      if (configs) {
+        configs.forEach(c => masterConfigs[c.key] = c.value);
+        if (masterConfigs.app_title) {
+          document.getElementById('loginAppTitle').innerText = masterConfigs.app_title;
+          document.getElementById('navAppTitle').innerText = masterConfigs.app_title;
+        }
+        if (masterConfigs.app_subtitle) {
+          document.getElementById('loginAppSubTitle').innerText = masterConfigs.app_subtitle;
+          document.getElementById('navAppSubTitle').innerHTML = `<i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> ${masterConfigs.app_subtitle}`;
+        }
+        if (masterConfigs.excluded_expedition_sites) {
+          excludedSitesList = masterConfigs.excluded_expedition_sites.split(',').map(s => s.trim().toUpperCase());
+        }
+      }
+
+      // 2. Kategori Aloptama & Generasi Floating Cards
+      let { data: categories } = await supabaseClient.from('kategori_aloptama').select('*');
+      const floatContainer = document.getElementById('floatingStatsContainer');
+      floatContainer.innerHTML = `<div class="stat-card-float card-all" onclick="resetFilter()"><div class="stat-title">TOTAL</div><div class="stat-val mono" id="count-total">0</div></div>`;
+
+      if (categories) {
+        categories.forEach(cat => {
+          masterCategories[cat.kategori_id] = cat;
+          floatContainer.innerHTML += `
+            <div class="stat-card-float" style="border-left: 3.5px solid ${cat.warna_hex}" onclick="toggleLayerFilter('${cat.kategori_id}')">
+              <div class="stat-title">${cat.nama_kategori}</div>
+              <div class="stat-val mono" id="count-${cat.kategori_id}">0</div>
+            </div>`;
+        });
+      }
+
+      // 3. Dropdown Master Penyebab Mati
+      let { data: reasons } = await supabaseClient.from('master_penyebab_mati').select('*').eq('is_active', true);
+      const bypassSelect = document.getElementById('bypassReason');
+      bypassSelect.innerHTML = '';
+      if (reasons) reasons.forEach(r => bypassSelect.innerHTML += `<option value="${r.label_alasan}">${r.label_alasan}</option>`);
+
+      // 4. Dropdown Master Radius Ekspedisi
+      let { data: radiuses } = await supabaseClient.from('master_radius_ekspedisi').select('*');
+      const radiusSelect = document.getElementById('selectCorridorRadius');
+      radiusSelect.innerHTML = '';
+      if (radiuses) radiuses.forEach(r => radiusSelect.innerHTML += `<option value="${r.radius_km}" ${r.is_default ? 'selected' : ''}>${r.label_opsi}</option>`);
+    }
 
     async function handleLogin(e) {
       e.preventDefault();
@@ -449,9 +376,14 @@
     async function handleLogout() { await supabaseClient.auth.signOut(); location.reload(); }
 
     function initMap() {
-      map = L.map('map', { center: [2.5, 99.2], zoom: 7, layers: [L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })], zoomControl: false });
+      const defaultLat = parseFloat(masterConfigs.map_default_lat || 2.5);
+      const defaultLng = parseFloat(masterConfigs.map_default_lng || 99.2);
+      const defaultZoom = parseInt(masterConfigs.map_default_zoom || 7);
+
+      map = L.map('map', { center: [defaultLat, defaultLng], zoom: defaultZoom, layers: [L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })], zoomControl: false });
       L.control.zoom({ position: 'bottomright' }).addTo(map);
-      Object.keys(catMap).forEach(k => { groups[k] = L.layerGroup().addTo(map); });
+      
+      Object.keys(masterCategories).forEach(k => { groups[k] = L.layerGroup().addTo(map); });
       groups['off'] = L.layerGroup();
     }
 
@@ -483,20 +415,15 @@
         const isUp = item.status !== 'OFF';
         isUp ? counts.up++ : counts.down++;
 
-        if (!['TSI', 'LD_TSI'].includes(item.id.toUpperCase())) {
+        if (!excludedSitesList.includes(item.id.toUpperCase())) {
           const opt = `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
           selectDest.innerHTML += opt; selectManual.innerHTML += opt;
         }
 
-        const iconHtml = {
-          seismo: '<div class="marker-triangle"></div>', wrsng: '<div class="marker-computer"><i class="fa-solid fa-desktop"></i></div>',
-          accel: '<div class="marker-circle"></div>', inten: '<div class="marker-star"><i class="fa-solid fa-star"></i></div>',
-          tsunami: '<div class="marker-anchor"><i class="fa-solid fa-anchor"></i></div>', lightning: '<div class="marker-bolt"><i class="fa-solid fa-bolt"></i></div>',
-          magneto: '<div class="marker-box"><i class="fa-solid fa-cube"></i></div>'
-        }[item.kategori] || '';
+        const catMeta = masterCategories[item.kategori] || { fa_icon: 'fa-location-dot', warna_hex: '#38bdf8', size_x: 24, size_y: 24 };
+        const iconHtml = `<div style="background:${catMeta.warna_hex}; color:white; width:${catMeta.size_x}px; height:${catMeta.size_y}px; border-radius:5px; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 6px ${catMeta.warna_hex};"><i class="fa-solid ${catMeta.fa_icon}"></i></div>`;
 
-        const sz = { seismo: [20, 20], wrsng: [24, 24], accel: [18, 18], inten: [22, 22], tsunami: [24, 24], lightning: [24, 24], magneto: [22, 22] }[item.kategori] || [24, 24];
-        const icon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: sz, iconAnchor: [sz[0] / 2, sz[1] / 2] });
+        const icon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [catMeta.size_x, catMeta.size_y], iconAnchor: [catMeta.size_x/2, catMeta.size_y/2] });
         const marker = L.marker([item.lat, item.lng], { icon }).on('click', () => { activeStation = item; openDetailPanel(item); map.flyTo([item.lat, item.lng], 13); });
 
         if (groups[item.kategori]) marker.addTo(groups[item.kategori]);
@@ -512,15 +439,15 @@
       updateCountText('tbl-percent', `${((counts.up / counts.total) * 100).toFixed(1)}%`);
 
       const tbody = document.getElementById('tbl-detail-rows'); tbody.innerHTML = '';
-      Object.keys(catMap).forEach(k => {
+      Object.keys(masterCategories).forEach(k => {
         const stat = (viewStats || []).find(v => v.kategori === k) || { total: 0, up: 0, down: 0, prio: 0, active_pct: 0 };
         updateCountText(`count-${k}`, stat.total || 0);
-        tbody.innerHTML += `<tr><td>${catMap[k]}</td><td>${stat.total||0}</td><td class="text-success">${stat.up||0}</td><td class="text-danger">${stat.down||0}</td><td class="text-danger">${stat.prio||0}</td><td class="text-info">${stat.active_pct||0}%</td></tr>`;
+        tbody.innerHTML += `<tr><td>${masterCategories[k].nama_kategori}</td><td>${stat.total||0}</td><td class="text-success">${stat.up||0}</td><td class="text-danger">${stat.down||0}</td><td class="text-danger">${stat.prio||0}</td><td class="text-info">${stat.active_pct||0}%</td></tr>`;
       });
     }
 
     function planMultiSiteRoute() {
-      const offSites = allMarkers.filter(m => m.data.status === 'OFF' && !['TSI', 'LD_TSI'].includes(m.data.id.toUpperCase())).map(m => m.data);
+      const offSites = allMarkers.filter(m => m.data.status === 'OFF' && !excludedSitesList.includes(m.data.id.toUpperCase())).map(m => m.data);
       if (!offSites.length) return alert("✅ Tidak ada stasiun luar yang bermasalah (OFF)!");
       if (!userCoords) return locateUser();
 
@@ -552,7 +479,7 @@
 
       currentCorridorSites = [];
       rawStationData.forEach(site => {
-        if (site.id === destSite.id || ['TSI', 'LD_TSI'].includes(site.id.toUpperCase())) return;
+        if (site.id === destSite.id || excludedSitesList.includes(site.id.toUpperCase())) return;
         let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, site.lat, site.lng);
         let distToDest = getHaversineDistance(site.lat, site.lng, destSite.lat, destSite.lng);
         let directDist = getHaversineDistance(userCoords.lat, userCoords.lng, destSite.lat, destSite.lng);
@@ -591,7 +518,8 @@
       activeCorridorSites.forEach(s => { totalDistKm += getHaversineDistance(currLat, currLng, s.lat, s.lng); currLat = s.lat; currLng = s.lng; });
       totalDistKm += getHaversineDistance(currLat, currLng, destSite.lat, destSite.lng);
 
-      let travelDays = Math.ceil(totalDistKm / 200), totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
+      const avgSpeed = parseFloat(masterConfigs.avg_speed_km_per_day || 200);
+      let travelDays = Math.ceil(totalDistKm / avgSpeed), totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
 
       document.getElementById('resSiteCount').innerText = `${totalVisitedSites} Site (${activeCorridorSites.length} Singgah + 1 Tujuan)`;
       document.getElementById('resTotalDistance').innerText = `±${Math.round(totalDistKm)} km`;
@@ -706,7 +634,7 @@
 
     function filterByPriority() { hideAllLayers(); map.addLayer(groups['off']); closePanel(); const offM = allMarkers.filter(m => m.data.status === 'OFF'); if (offM.length) map.fitBounds(L.latLngBounds(offM.map(m => m.marker.getLatLng())), { padding: [30, 30] }); }
     function hideAllLayers() { Object.keys(groups).forEach(k => map.removeLayer(groups[k])); }
-    function resetFilter() { hideAllLayers(); Object.keys(catMap).forEach(k => map.addLayer(groups[k])); map.setView([2.5, 99.2], 7); closePanel(); }
+    function resetFilter() { hideAllLayers(); Object.keys(masterCategories).forEach(k => map.addLayer(groups[k])); map.setView([parseFloat(masterConfigs.map_default_lat||2.5), parseFloat(masterConfigs.map_default_lng||99.2)], parseInt(masterConfigs.map_default_zoom||7)); closePanel(); }
     function toggleLayerFilter(type) { hideAllLayers(); if (groups[type]) map.addLayer(groups[type]); closePanel(); }
     function closePanel() { if (offcanvasObj) offcanvasObj.hide(); activeStation = null; }
     function toggleStatsBox() { 
