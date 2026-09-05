@@ -153,7 +153,6 @@
         <div class="col-auto d-flex gap-1 flex-wrap">
           <button class="btn btn-sm btn-outline-info fw-semibold" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya</button>
           <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="planMultiSiteRoute()"><i class="fa-solid fa-route me-1"></i> Multi-Site (OFF)</button>
-          <!-- FITUR RUTE PERJALANAN EKSPEDISI BERANTAI -->
           <button class="btn btn-sm btn-info fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#expeditionModal"><i class="fa-solid fa-map-location-dot me-1"></i> Rencana Ekspedisi</button>
           <button class="btn btn-sm btn-outline-secondary fw-semibold" onclick="resetFilter()"><i class="fa-solid fa-rotate me-1"></i> Reset</button>
         </div>
@@ -198,7 +197,7 @@
     </div>
   </div>
 
-  <!-- OFFCANVAS DETAIL PANEL & SITE KUNJUNGAN TERDEKAT -->
+  <!-- OFFCANVAS DETAIL STASIUN -->
   <div class="offcanvas offcanvas-end offcanvas-responsive bg-panel text-white border-start border-secondary" tabindex="-1" id="detailOffcanvas">
     <div class="offcanvas-header border-bottom border-secondary py-2 px-3">
       <div class="d-flex align-items-center gap-2">
@@ -224,7 +223,6 @@
         </div>
       </div>
 
-      <!-- WIDGET REKOMENDASI STASIUN TERDEKAT DARI SITE INI -->
       <div class="card bg-dark border-info p-3 mb-3">
         <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-compass me-1"></i> SITE LAIN DALAM RADIUS TERDEKAT:</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
@@ -297,7 +295,7 @@
     </div>
   </div>
 
-  <!-- MODAL PERENCANAAN RUTE EKSPEDISI (TITIK AWAL DARI GPS KE TITIK AKHIR TUJUAN) -->
+  <!-- MODAL RANCANGAN EKSPEDISI DENGAN CHECKBOX ELIMINASI SITE -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
@@ -323,16 +321,15 @@
             </select>
           </div>
 
-          <!-- ANALISIS HASIL RUTE DAN ESTIMASI HARI -->
           <div id="expeditionResultBox" class="card bg-panel border-secondary p-3" style="display: none;">
             <h6 class="fw-bold text-warning border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-calculator me-1"></i> ANALISIS RUTE EKSPEDISI:</h6>
-            <div class="mb-1 small">Stasiun Dilewati/Disinggahi: <strong id="resSiteCount" class="text-info">0 Site</strong></div>
+            <div class="mb-1 small">Stasiun Disinggahi: <strong id="resSiteCount" class="text-info">0 Site</strong></div>
             <div class="mb-1 small">Total Jarak Tempuh Estimasi: <strong id="resTotalDistance" class="text-info">0 km</strong></div>
             <div class="mb-2 small">Estimasi Waktu Perjalanan Total: <strong id="resEstimDays" class="text-warning mono fs-6">0 Hari</strong></div>
-            <small class="text-muted d-block mb-2" style="font-size: 10px;">*Asumsi: 1 Site = 1 Hari Kunjungan/Maintenance + Perjalanan Darat.</small>
+            <small class="text-muted d-block mb-2" style="font-size: 10px;">*Catatan: Stasiun TSI (Kantor) otomatis dikecualikan. Hapus centang jika tidak ingin mengunjungi site tersebut.</small>
             
-            <label class="form-label text-muted small fw-bold mt-1">Daftar Stasiun Yang Dilewati:</label>
-            <div id="resSiteList" class="list-group list-group-flush mb-3 small" style="max-height: 140px; overflow-y: auto;"></div>
+            <label class="form-label text-muted small fw-bold mt-1">Hapus Centang Untuk Eliminasi Site:</label>
+            <div id="resSiteList" class="list-group list-group-flush mb-3 small" style="max-height: 180px; overflow-y: auto;"></div>
 
             <button class="btn btn-info btn-sm w-100 fw-bold text-dark" onclick="openExpeditionGoogleMaps()"><i class="fa-solid fa-diamond-turn-right me-1"></i> Buka Rute Google Maps</button>
           </div>
@@ -375,6 +372,7 @@
     let rawStationData = [], allMarkers = [], groups = {};
     let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null;
     let expeditionGoogleMapsUrl = "";
+    let currentCorridorSites = []; // Menyimpan daftar stasiun dalam koridor untuk di-filter
 
     const catMap = { seismo: 'Seismograph', wrsng: 'WRSNG', accel: 'Accelerograph', inten: 'Intensitymeter', tsunami: 'Tsunami Gauge', lightning: 'Lightning Det.', magneto: 'Magnetometer' };
 
@@ -411,7 +409,6 @@
       groups['off'] = L.layerGroup();
     }
 
-    // RUMUS HAVERSINE UNTUK HITUNG JARAK (KM)
     function getHaversineDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -439,7 +436,10 @@
         const isUp = item.status !== 'OFF';
         if (isUp) counts.up++; else counts.down++;
 
-        selectDest.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
+        // PENGECUALIAN TSI DARI OPSIONAL PILIHAN EKSPEDISI MENGINAP
+        if (item.id.toUpperCase() !== 'TSI' && item.id.toUpperCase() !== 'LD_TSI') {
+          selectDest.innerHTML += `<option value="${item.id}">${item.nama} [${item.kategori.toUpperCase()}] ${!isUp ? '(OFF)' : ''}</option>`;
+        }
 
         const iconHtml = {
           seismo: '<div class="marker-triangle"></div>', wrsng: '<div class="marker-computer"><i class="fa-solid fa-desktop"></i></div>',
@@ -478,16 +478,17 @@
       });
     }
 
-    // LOGIKA PERCINTAAN LOGIKA 1: MULTI-SITE UNTUK SITE BERSTATUS OFF
+    // FITUR RUTE MULTI-SITE UNTUK SELURUH STASIUN MATI (OFF)
     function planMultiSiteRoute() {
-      const offSites = allMarkers.filter(m => m.data.status === 'OFF').map(m => m.data);
+      // PENGECUALIAN TSI PADA LOGIKA UTAMA
+      const offSites = allMarkers.filter(m => m.data.status === 'OFF' && m.data.id.toUpperCase() !== 'TSI' && m.data.id.toUpperCase() !== 'LD_TSI').map(m => m.data);
       if (offSites.length === 0) {
-        alert("✅ Tidak ada stasiun yang bermasalah (OFF). Seluruh sistem berjalan normal!");
+        alert("✅ Tidak ada stasiun luar yang bermasalah (OFF). Seluruh sistem berjalan normal!");
         return;
       }
 
       if (!userCoords) {
-        alert("📍 Silakan klik tombol 'Posisi Saya' terlebih dahulu agar sistem dapat menghitung rute dari lokasi Anda.");
+        alert("📍 Silakan klik tombol 'Posisi Saya' terlebih dahulu.");
         locateUser();
         return;
       }
@@ -513,7 +514,7 @@
       window.open(googleMapsUrl, '_blank');
     }
 
-    // LOGIKA FITUR 2: HITUNG EKSPEDISI DARI AWAL GPS SAMPAI DESTINASI DENGAN PERSINGGAHAN DAN ESTIMASI HARI
+    // CALCULATE KALKULASI RUTE EKSPEDISI DENGAN CHECKBOX ELIMINASI & PENGECUALIAN TSI
     function calculateExpeditionRoute() {
       const destId = document.getElementById('selectDestinationSite').value;
       const radiusKm = parseFloat(document.getElementById('selectCorridorRadius').value);
@@ -522,63 +523,84 @@
       if (!destId) { resBox.style.display = 'none'; return; }
 
       if (!userCoords) {
-        alert("📍 Lokasi GPS Anda belum aktif. Klik 'Posisi Saya' terlebih dahulu.");
-        locateUser(); return;
+        if (!navigator.geolocation) { alert("⚠️ GPS Tidak Didukung."); return; }
+        navigator.geolocation.getCurrentPosition(pos => {
+          userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          calculateExpeditionRoute();
+        }, () => alert("⚠️ Harap izinkan akses GPS pada browser Anda."));
+        return;
       }
 
       const destSite = rawStationData.find(s => s.id === destId);
       if (!destSite) return;
 
-      // Cari stasiun-stasiun lain yang berada dalam koridor lintasan (radiusKm)
-      let corridorSites = [];
+      currentCorridorSites = [];
       rawStationData.forEach(site => {
-        if (site.id === destSite.id) return;
+        // PENGECUALIAN STASIUN TSI DAN DESTINASI DARI DAFTAR LINTASAN
+        if (site.id === destSite.id || site.id.toUpperCase() === 'TSI' || site.id.toUpperCase() === 'LD_TSI') return;
         
-        // Jarak dari Awal ke Site + Jarak dari Site ke Destinasi
         let distFromStart = getHaversineDistance(userCoords.lat, userCoords.lng, site.lat, site.lng);
         let distToDest = getHaversineDistance(site.lat, site.lng, destSite.lat, destSite.lng);
         let directDist = getHaversineDistance(userCoords.lat, userCoords.lng, destSite.lat, destSite.lng);
 
-        // Jika deviasi jarak tidak terlalu memutar melebihi radiusKm
         if ((distFromStart + distToDest - directDist) <= (radiusKm / 3)) {
-          corridorSites.push({ ...site, distFromStart });
+          currentCorridorSites.push({ ...site, distFromStart, selected: true });
         }
       });
 
-      // Urutkan stasiun di jalur lintasan dari yang terdekat
-      corridorSites.sort((a, b) => a.distFromStart - b.distFromStart);
-      const totalVisitedSites = corridorSites.length + 1; // Termasuk site tujuan akhir
+      currentCorridorSites.sort((a, b) => a.distFromStart - b.distFromStart);
+      renderExpeditionResults(destSite);
+      resBox.style.display = 'block';
+    }
 
-      // Hitung Total Jarak Tempuh Est
+    // RENDER ULANG HASIL EKSPEDISI SAAT ADA SITE DITERIMA ATAU DI-ELIMINASI
+    function renderExpeditionResults(destSite) {
+      const activeCorridorSites = currentCorridorSites.filter(s => s.selected);
+      const totalVisitedSites = activeCorridorSites.length + 1; // Termasuk site tujuan akhir
+
       let totalDistKm = 0;
       let currLat = userCoords.lat, currLng = userCoords.lng;
-      corridorSites.forEach(s => {
+      activeCorridorSites.forEach(s => {
         totalDistKm += getHaversineDistance(currLat, currLng, s.lat, s.lng);
         currLat = s.lat; currLng = s.lng;
       });
       totalDistKm += getHaversineDistance(currLat, currLng, destSite.lat, destSite.lng);
 
-      // ESTIMASI WAKTU PERJALANAN: 1 Site = 1 Hari Maintenance + Perjalanan (Asumsi 200km/hari)
+      // ESTIMASI WAKTU: 1 Site = 1 Hari Maintenance
       let travelDays = Math.ceil(totalDistKm / 200);
       let totalEstimDays = totalVisitedSites + (travelDays > 1 ? travelDays - 1 : 0);
 
-      document.getElementById('resSiteCount').innerText = `${totalVisitedSites} Site (${corridorSites.length} Singgah + 1 Tujuan)`;
+      document.getElementById('resSiteCount').innerText = `${totalVisitedSites} Site (${activeCorridorSites.length} Singgah + 1 Tujuan)`;
       document.getElementById('resTotalDistance').innerText = `±${Math.round(totalDistKm)} km`;
       document.getElementById('resEstimDays').innerText = `${totalEstimDays} Hari Kerja`;
 
       const listEl = document.getElementById('resSiteList');
       listEl.innerHTML = '';
-      corridorSites.forEach((s, idx) => {
-        listEl.innerHTML += `<div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between"><span>${idx+1}. ${s.nama}</span> <span class="badge ${s.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${s.status||'ON'}</span></div>`;
+      currentCorridorSites.forEach((s, idx) => {
+        listEl.innerHTML += `
+          <div class="list-group-item bg-dark text-white border-secondary p-1 px-2 d-flex justify-content-between align-items-center mb-1 rounded">
+            <div class="form-check m-0">
+              <input class="form-check-input" type="checkbox" id="chk_${s.id}" ${s.selected ? 'checked' : ''} onchange="toggleSiteSelection('${s.id}')">
+              <label class="form-check-label small" for="chk_${s.id}">${s.nama}</label>
+            </div>
+            <span class="badge ${s.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${s.status||'ON'}</span>
+          </div>`;
       });
-      listEl.innerHTML += `<div class="list-group-item bg-dark text-info border-info p-1 px-2 d-flex justify-content-between fw-bold"><span>🎯 ${destSite.nama} (Tujuan Utama)</span> <span class="badge ${destSite.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${destSite.status||'ON'}</span></div>`;
+      listEl.innerHTML += `<div class="list-group-item bg-dark text-info border-info p-1 px-2 d-flex justify-content-between align-items-center fw-bold rounded"><span>🎯 ${destSite.nama} (Tujuan Utama)</span> <span class="badge ${destSite.status === 'OFF' ? 'bg-danger' : 'bg-success'}">${destSite.status||'ON'}</span></div>`;
 
-      // Buat URL Google Maps
-      let waypoints = corridorSites.map(s => `${s.lat},${s.lng}`).join('|');
+      let waypoints = activeCorridorSites.map(s => `${s.lat},${s.lng}`).join('|');
       expeditionGoogleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userCoords.lat},${userCoords.lng}&destination=${destSite.lat},${destSite.lng}`;
       if (waypoints) expeditionGoogleMapsUrl += `&waypoints=${waypoints}`;
+    }
 
-      resBox.style.display = 'block';
+    function toggleSiteSelection(siteId) {
+      const site = currentCorridorSites.find(s => s.id === siteId);
+      if (site) {
+        site.selected = !site.selected;
+        const destId = document.getElementById('selectDestinationSite').value;
+        const destSite = rawStationData.find(s => s.id === destId);
+        renderExpeditionResults(destSite);
+      }
     }
 
     function openExpeditionGoogleMaps() {
@@ -689,7 +711,6 @@
       lightboxModalObj.show();
     }
 
-    // BUKA PANEL DETAIL STASIUN & HITUNG STASIUN TERDEKAT DARI SITE INI
     function openDetailPanel(item) {
       document.getElementById('panelTitle').innerText = item.nama;
       document.getElementById('panelCategory').innerText = item.kategori.toUpperCase();
@@ -705,7 +726,6 @@
       document.getElementById('valNotes').innerText = item.catatan || '-';
       document.getElementById('valRecs').innerText = item.rekomendasi || '-';
 
-      // TAPILKAN STASIUN TERDEKAT DARI DARI SITE INI (LOGIKA 3 TERDEKAT)
       const nearbyContainer = document.getElementById('nearbySitesContainer');
       nearbyContainer.innerHTML = '';
       let nearbySites = rawStationData.filter(s => s.id !== item.id).map(s => {
