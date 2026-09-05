@@ -376,7 +376,7 @@ function toggleStatsBox() {
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL EDITOR DATA ALOPTAMA (COMBINATION DROPDOWN + MANUAL INPUT)
+// MODUL EDITOR DATA ALOPTAMA (PERBAIKAN TAMPILAN NAMA ALAT / SITE / LOKASI)
 // ============================================================
 async function renderAloptamaEditorTable() {
   const tbody = document.getElementById('editorAloptamaBody');
@@ -393,13 +393,17 @@ async function renderAloptamaEditorTable() {
   tbody.innerHTML = '';
 
   items.forEach((item) => {
+    // Memastikan jika nama_alat_site NULL, lokasi akan digunakan secara otomatis
+    const displayName = item.nama_alat_site 
+      ? (item.lokasi ? `${item.nama_alat_site} (${item.lokasi})` : item.nama_alat_site) 
+      : (item.lokasi || '-');
+
     tbody.innerHTML += `
       <tr>
         <td class="text-muted">${item.id}</td>
         <td><small class="badge bg-secondary">${item.kategori}</small></td>
-        <td class="fw-bold text-white">${item.nama_alat_site || '-'}</td>
+        <td class="fw-bold text-white">${displayName}</td>
         
-        <!-- KOLOM KONDISI: INPUT + DATALIST (DROPDOWN & MANUAL) -->
         <td>
           <input 
             type="text" 
@@ -411,7 +415,6 @@ async function renderAloptamaEditorTable() {
           >
         </td>
 
-        <!-- KOLOM KETERANGAN: INPUT + DATALIST (DROPDOWN & MANUAL) -->
         <td>
           <input 
             type="text" 
@@ -520,7 +523,7 @@ async function generateAloptamaPDF(e) {
               <tr>
                 <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.no_alat || (i + 1)}</td>
                 ${isSiteTable ? `
-                  <td style="border: 1px solid #000; padding: 4px;">${r.nama_alat_site || '-'} <br><small style="color:#555;">${r.lokasi || ''}</small></td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.nama_alat_site || r.lokasi || '-'} ${r.nama_alat_site && r.lokasi ? `<br><small style="color:#555;">${r.lokasi}</small>` : ''}</td>
                   <td style="border: 1px solid #000; padding: 4px;">${r.kabupaten_kota || '-'}</td>
                   <td style="border: 1px solid #000; padding: 4px;">${r.tipe || '-'}</td>
                   <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.kondisi || '-'}</td>
