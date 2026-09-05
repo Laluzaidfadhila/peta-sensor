@@ -62,7 +62,14 @@
         <div class="col-12 col-md">
           <div class="input-group input-group-sm">
             <span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span>
-            <input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
+            <!-- INPUT PENCARIAN DENGAN DEBOUNCE AUTO SEARCH -->
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="form-control bg-panel border-secondary text-white" 
+              placeholder="Cari Kode Stasiun / ID Instrumen..." 
+              onkeyup="handleSearchInput()"
+            >
           </div>
         </div>
         <div class="col-auto d-flex gap-1 flex-wrap">
