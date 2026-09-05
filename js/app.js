@@ -8,12 +8,15 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let map, activeStation = null, userLocationMarker = null, userAccuracyCircle = null, userCoords = null;
 let rawStationData = [], allMarkers = [], groups = {}, currentCorridorSites = [];
 let masterCategories = {}, masterConfigs = {}, excludedSitesList = [];
-let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, expeditionGoogleMapsUrl = "";
+let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, pdfModalObj = null, expeditionGoogleMapsUrl = "";
 
 document.addEventListener('DOMContentLoaded', async () => {
   offcanvasObj = new bootstrap.Offcanvas(document.getElementById('detailOffcanvas'));
   lightboxModalObj = new bootstrap.Modal(document.getElementById('imageLightboxModal'));
   expeditionModalObj = new bootstrap.Modal(document.getElementById('expeditionModal'));
+  
+  const pdfModalEl = document.getElementById('pdfReportModal');
+  if (pdfModalEl) pdfModalObj = new bootstrap.Modal(pdfModalEl);
 
   if (window.innerWidth >= 992) {
     document.getElementById('statsBoxBody').style.display = 'block';
@@ -160,7 +163,6 @@ function openDetailPanel(item) {
   const badge = document.getElementById('panelStatusBadge');
   badge.innerText = item.status || 'ON'; badge.className = `badge ${item.status === 'OFF' ? 'bg-danger' : 'bg-success'} fw-bold`;
 
-  // INTEGRASI DINAMIS DATA PIC WA
   const picCard = document.getElementById('picCardSection');
   const picNameEl = document.getElementById('valPicName');
   const waBtn = document.getElementById('btnWaPic');
@@ -371,3 +373,196 @@ function toggleStatsBox() {
   }
 }
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
+
+// ============================================================
+// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS DARI DATABASE aloptama)
+// ============================================================
+async function generateAloptamaPDF(e) {
+  e.preventDefault();
+  
+  const noSurat = document.getElementById('pdfNoSurat').value;
+  const tanggalRaw = document.getElementById('pdfTanggal').value;
+  const lampiran = document.getElementById('pdfLampiran').value;
+  const tujuan = document.getElementById('pdfTujuan').value;
+  const namaKepala = document.getElementById('pdfNamaKepala').value;
+  const nipKepala = document.getElementById('pdfNipKepala').value;
+  const tembusanStr = document.getElementById('pdfTembusan').value;
+
+  const dateObj = new Date(tanggalRaw);
+  const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const tglFormatted = `${dateObj.getDate()} ${bulanIndo[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+
+  // 1. Tarik Data Terpisah Dari Tabel data_aloptama
+  let { data: items, error } = await supabaseClient.from('data_aloptama').select('*').order('id', { ascending: true });
+  
+  if (error || !items) {
+    alert("⚠️ Gagal mengambil data aloptama dari database: " + (error ? error.message : "Data Kosong"));
+    return;
+  }
+
+  // 2. Kelompokkan Data Berdasarkan Kategori
+  const groupedData = {};
+  items.forEach(item => {
+    if (!groupedData[item.kategori]) groupedData[item.kategori] = [];
+    groupedData[item.kategori].push(item);
+  });
+
+  // 3. Susun Tembusan
+  const arrTembusan = tembusanStr.split(',').map(t => `<li>${t.trim()}</li>`).join('');
+
+  // 4. Render HTML Tabel Berdasarkan Kategori
+  let htmlTables = '';
+  let catIndex = 1;
+
+  for (const [kategoriName, rows] of Object.entries(groupedData)) {
+    let isSiteTable = kategoriName.toLowerCase().includes('site') || kategoriName.toLowerCase().includes('wrs');
+    
+    htmlTables += `
+      <div style="margin-top: 15px; page-break-inside: avoid;">
+        <h4 style="font-size: 10pt; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;">
+          ${catIndex}. ${kategoriName}
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 8.5pt;">
+          <thead>
+            <tr style="background-color: #f2f2f2; text-align: center;">
+              <th style="border: 1px solid #000; padding: 4px; width: 30px;">No</th>
+              ${isSiteTable ? `
+                <th style="border: 1px solid #000; padding: 4px;">Nama Site / Lokasi</th>
+                <th style="border: 1px solid #000; padding: 4px;">Kabupaten / Kota</th>
+                <th style="border: 1px solid #000; padding: 4px;">Tipe Alat</th>
+                <th style="border: 1px solid #000; padding: 4px;">Kondisi</th>
+                <th style="border: 1px solid #000; padding: 4px;">Keterangan</th>
+              ` : `
+                <th style="border: 1px solid #000; padding: 4px;">Nama Alat</th>
+                <th style="border: 1px solid #000; padding: 4px;">Merk</th>
+                <th style="border: 1px solid #000; padding: 4px;">Tipe</th>
+                <th style="border: 1px solid #000; padding: 4px;">No Seri</th>
+                <th style="border: 1px solid #000; padding: 4px;">Tahun</th>
+                <th style="border: 1px solid #000; padding: 4px;">Kondisi</th>
+                <th style="border: 1px solid #000; padding: 4px;">Keterangan</th>
+              `}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => `
+              <tr>
+                <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.no_alat || (i + 1)}</td>
+                ${isSiteTable ? `
+                  <td style="border: 1px solid #000; padding: 4px;">${r.nama_alat_site || '-'} <br><small style="color:#555;">${r.lokasi || ''}</small></td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.kabupaten_kota || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.tipe || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.kondisi || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.keterangan || '-'}</td>
+                ` : `
+                  <td style="border: 1px solid #000; padding: 4px;">${r.nama_alat_site || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.merk || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.tipe || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.no_seri || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.tahun_pengadaan || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px; text-align: center;">${r.kondisi || '-'}</td>
+                  <td style="border: 1px solid #000; padding: 4px;">${r.keterangan || '-'}</td>
+                `}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    catIndex++;
+  }
+
+  // 5. Susun Layout Lengkap Surat & KOP
+  const printContent = `
+    <div id="pdfPrintArea" style="font-family: Arial, sans-serif; color: #000; padding: 10mm; background: #fff;">
+      <table style="width: 100%; border-bottom: 3px double #000; padding-bottom: 6px; margin-bottom: 12px;">
+        <tr>
+          <td style="width: 12%; text-align: center;">
+            <img src="https://www.bmkg.go.id/asset/img/logo/logo-bmkg.png" style="width: 65px; height: auto;">
+          </td>
+          <td style="text-align: center;">
+            <strong style="font-size: 11pt; display: block; text-transform: uppercase;">BADAN METEOROLOGI, KLIMATOLOGI, DAN GEOFISIKA</strong>
+            <strong style="font-size: 12pt; display: block; text-transform: uppercase;">STASIUN GEOFISIKA KELAS I DELI SERDANG</strong>
+            <span style="font-size: 8pt; display: block;">Jln. Geofisika No. 1 Tuntungan I, Pancur Batu - Deli Serdang Kode Pos 20353</span>
+            <span style="font-size: 8pt; display: block;">Email: stageof.deliserdang@bmkg.go.id</span>
+          </td>
+        </tr>
+      </table>
+
+      <table style="width: 100%; font-size: 9.5pt; margin-bottom: 15px;">
+        <tr>
+          <td style="width: 10%;">Nomor</td>
+          <td style="width: 2%;">:</td>
+          <td style="width: 48%;">${noSurat}</td>
+          <td style="width: 40%; text-align: right;">Deli Serdang, ${tglFormatted}</td>
+        </tr>
+        <tr>
+          <td>Lampiran</td>
+          <td>:</td>
+          <td>${lampiran}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Hal</td>
+          <td>:</td>
+          <td><strong>Laporan Kondisi Aloptama Stasiun Geofisika Deli Serdang</strong></td>
+          <td>Yth. ${tujuan}<br>di Jakarta</td>
+        </tr>
+      </table>
+
+      <p style="font-size: 9.5pt; text-align: justify; line-height: 1.4;">
+        Bersama ini kami laporkan Kondisi Aloptama per tanggal <strong>${tglFormatted}</strong> yang menjadi tanggung jawab Stasiun Geofisika Kelas I Deli Serdang.
+      </p>
+
+      <div style="text-align: center; margin: 15px 0 5px 0;">
+        <strong style="font-size: 10pt; text-transform: uppercase;">LAPORAN KONDISI ALOPTAMA</strong><br>
+        <strong style="font-size: 10pt; text-transform: uppercase;">STASIUN GEOFISIKA KELAS I DELI SERDANG</strong><br>
+        <span style="font-size: 9pt;">Per Tanggal ${tglFormatted}</span>
+      </div>
+
+      ${htmlTables}
+
+      <div style="margin-top: 30px; page-break-inside: avoid;">
+        <table style="width: 100%; font-size: 9.5pt;">
+          <tr>
+            <td style="width: 50%;">
+              Tembusan:<br>
+              <ol style="margin: 0; padding-left: 18px;">
+                ${arrTembusan}
+              </ol>
+            </td>
+            <td style="width: 50%; text-align: center; vertical-align: top;">
+              Deli Serdang, ${tglFormatted}<br>
+              Kepala Stasiun Geofisika Kelas I Deli Serdang<br>
+              <br><br><br>
+              <strong>${namaKepala}</strong>
+              ${nipKepala ? `<br>NIP. ${nipKepala}` : ''}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  `;
+
+  if (pdfModalObj) pdfModalObj.hide();
+
+  let win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head>
+        <title>Laporan Kondisi Aloptama ${tglFormatted}</title>
+        <style>
+          @page { size: A4 portrait; margin: 8mm; }
+          body { margin: 0; padding: 0; background: #fff; }
+        </style>
+      </head>
+      <body>
+        ${printContent}
+      </body>
+    </html>
+  `);
+  win.document.close();
+  setTimeout(() => {
+    win.focus();
+    win.print();
+  }, 500);
+}
