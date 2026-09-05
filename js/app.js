@@ -9,6 +9,7 @@ let map, activeStation = null, userLocationMarker = null, userAccuracyCircle = n
 let rawStationData = [], allMarkers = [], groups = {}, currentCorridorSites = [];
 let masterCategories = {}, masterConfigs = {}, excludedSitesList = [];
 let offcanvasObj = null, lightboxModalObj = null, expeditionModalObj = null, pdfModalObj = null, expeditionGoogleMapsUrl = "";
+let localAloptamaCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   offcanvasObj = new bootstrap.Offcanvas(document.getElementById('detailOffcanvas'));
@@ -375,7 +376,82 @@ function toggleStatsBox() {
 function searchStation() { const q = document.getElementById('searchInput').value.toLowerCase().trim(); if (!q) return; const match = allMarkers.find(m => m.title.includes(q)); if (match) { if (!map.hasLayer(match.group)) match.group.addTo(map); map.flyTo([match.data.lat, match.data.lng], 13); match.marker.fire('click'); } }
 
 // ============================================================
-// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS DARI DATABASE aloptama)
+// MODUL EDITOR DATA ALOPTAMA (COMBINATION DROPDOWN + MANUAL INPUT)
+// ============================================================
+async function renderAloptamaEditorTable() {
+  const tbody = document.getElementById('editorAloptamaBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><i class="fa-solid fa-spinner fa-spin me-1"></i> Memuat data aloptama...</td></tr>';
+
+  let { data: items, error } = await supabaseClient.from('data_aloptama').select('*').order('id', { ascending: true });
+
+  if (error || !items) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Gagal memuat data: ${error ? error.message : 'Kosong'}</td></tr>`;
+    return;
+  }
+
+  localAloptamaCache = items;
+  tbody.innerHTML = '';
+
+  items.forEach((item) => {
+    tbody.innerHTML += `
+      <tr>
+        <td class="text-muted">${item.id}</td>
+        <td><small class="badge bg-secondary">${item.kategori}</small></td>
+        <td class="fw-bold text-white">${item.nama_alat_site || '-'}</td>
+        
+        <!-- KOLOM KONDISI: INPUT + DATALIST (DROPDOWN & MANUAL) -->
+        <td>
+          <input 
+            type="text" 
+            id="cond_${item.id}" 
+            list="listKondisi" 
+            class="form-control form-control-sm bg-panel border-secondary text-white py-0 small" 
+            value="${item.kondisi || ''}" 
+            placeholder="Pilih / Ketik..."
+          >
+        </td>
+
+        <!-- KOLOM KETERANGAN: INPUT + DATALIST (DROPDOWN & MANUAL) -->
+        <td>
+          <input 
+            type="text" 
+            id="ket_${item.id}" 
+            list="listKeterangan" 
+            class="form-control form-control-sm bg-panel border-secondary text-white py-0 small" 
+            value="${item.keterangan || ''}" 
+            placeholder="Pilih / Ketik..."
+          >
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function saveAloptamaBatchUpdates() {
+  if (!localAloptamaCache.length) return;
+
+  const updates = localAloptamaCache.map(item => {
+    const newKondisi = document.getElementById(`cond_${item.id}`)?.value || item.kondisi;
+    const newKeterangan = document.getElementById(`ket_${item.id}`)?.value || item.keterangan;
+    return {
+      id: item.id,
+      kondisi: newKondisi,
+      keterangan: newKeterangan
+    };
+  });
+
+  const { error } = await supabaseClient.from('data_aloptama').upsert(updates, { onConflict: 'id' });
+
+  if (error) {
+    alert("⚠️ Gagal menyimpan perubahan: " + error.message);
+  } else {
+    alert("✅ Perubahan kondisi dan keterangan aloptama berhasil disimpan ke database!");
+    renderAloptamaEditorTable();
+  }
+}
+
+// ============================================================
+// MODUL CETAK LAPORAN ALOPTAMA PDF (DINAMIS DARI DATABASE data_aloptama)
 // ============================================================
 async function generateAloptamaPDF(e) {
   e.preventDefault();
@@ -392,7 +468,6 @@ async function generateAloptamaPDF(e) {
   const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   const tglFormatted = `${dateObj.getDate()} ${bulanIndo[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
 
-  // 1. Tarik Data Terpisah Dari Tabel data_aloptama
   let { data: items, error } = await supabaseClient.from('data_aloptama').select('*').order('id', { ascending: true });
   
   if (error || !items) {
@@ -400,17 +475,14 @@ async function generateAloptamaPDF(e) {
     return;
   }
 
-  // 2. Kelompokkan Data Berdasarkan Kategori
   const groupedData = {};
   items.forEach(item => {
     if (!groupedData[item.kategori]) groupedData[item.kategori] = [];
     groupedData[item.kategori].push(item);
   });
 
-  // 3. Susun Tembusan
   const arrTembusan = tembusanStr.split(',').map(t => `<li>${t.trim()}</li>`).join('');
 
-  // 4. Render HTML Tabel Berdasarkan Kategori
   let htmlTables = '';
   let catIndex = 1;
 
@@ -471,7 +543,6 @@ async function generateAloptamaPDF(e) {
     catIndex++;
   }
 
-  // 5. Susun Layout Lengkap Surat & KOP
   const printContent = `
     <div id="pdfPrintArea" style="font-family: Arial, sans-serif; color: #000; padding: 10mm; background: #fff;">
       <table style="width: 100%; border-bottom: 3px double #000; padding-bottom: 6px; margin-bottom: 12px;">
