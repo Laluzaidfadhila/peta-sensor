@@ -7,90 +7,156 @@
 
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg-dark: #0a0f1d; --panel-bg: #111827; --border-color: #374151; --accent-neon: #38bdf8;
-      --seismo-color: #2563eb; --wrsng-color: #dc2626; --accel-color: #16a34a; --inten-color: #d97706;
-      --tsunami-color: #0891b2; --lightning-color: #7c3aed; --magneto-color: #0d9488;
+      --bg-dark: #090d16;
+      --panel-bg: #111827;
+      --card-bg: #1f2937;
+      --border-color: #374151;
+      --accent-neon: #38bdf8;
+      --seismo-color: #2563eb;
+      --wrsng-color: #dc2626;
+      --accel-color: #16a34a;
+      --inten-color: #d97706;
+      --tsunami-color: #0891b2;
+      --lightning-color: #7c3aed;
+      --magneto-color: #0d9488;
     }
-    * { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-user-select: none; user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     .mono { font-family: 'JetBrains Mono', monospace; }
     body { background-color: var(--bg-dark); color: #f3f4f6; overflow-x: hidden; }
     .bg-panel { background-color: var(--panel-bg) !important; }
 
-    #loginScreen { position: fixed; inset: 0; background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
-    .stat-card { position: relative; overflow: hidden; cursor: pointer; transition: transform 0.15s; }
-    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-neon) !important; }
+    /* LOGIN SCREEN */
+    #loginScreen {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle, #1e293b 0%, var(--bg-dark) 100%);
+      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
+    }
+
+    /* KARTU STATISTIK GRID ATAS */
+    .stat-card {
+      position: relative; overflow: hidden; cursor: pointer;
+      transition: all 0.2s ease-in-out; border-radius: 10px;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent-neon) !important; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15); }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
     
-    .card-all::before { background: var(--accent-neon); } .card-seismo::before { background: var(--seismo-color); }
-    .card-wrsng::before { background: var(--wrsng-color); } .card-accel::before { background: var(--accel-color); }
-    .card-inten::before { background: var(--inten-color); } .card-tsunami::before { background: var(--tsunami-color); }
-    .card-lightning::before { background: var(--lightning-color); } .card-magneto::before { background: var(--magneto-color); }
+    .card-all::before { background: var(--accent-neon); }
+    .card-seismo::before { background: var(--seismo-color); }
+    .card-wrsng::before { background: var(--wrsng-color); }
+    .card-accel::before { background: var(--accel-color); }
+    .card-inten::before { background: var(--inten-color); }
+    .card-tsunami::before { background: var(--tsunami-color); }
+    .card-lightning::before { background: var(--lightning-color); }
+    .card-magneto::before { background: var(--magneto-color); }
 
+    /* PETA & FLOATING WIDGET */
     .map-container { position: relative; border-radius: 12px; overflow: hidden; }
-    #map { height: 72vh; min-height: 480px; width: 100%; }
-    .stats-floating-box { position: absolute; top: 12px; left: 12px; z-index: 999; width: 340px; max-width: calc(100% - 24px); background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-    .stats-box-header { background: rgba(11, 19, 32, 0.9); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-    .stats-box-body { padding: 10px; font-size: 11px; max-height: 380px; overflow-y: auto; }
+    #map { height: 72vh; min-height: 500px; width: 100%; }
+
+    .stats-floating-box {
+      position: absolute; top: 14px; left: 14px; z-index: 999; width: 320px; max-width: calc(100% - 28px);
+      background: rgba(17, 24, 39, 0.92); backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .stats-box-header { background: rgba(11, 19, 32, 0.95); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+    .stats-box-body { padding: 12px; font-size: 11px; max-height: 400px; overflow-y: auto; }
 
     .stats-summary-table, .stats-detail-table { width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 8px; }
-    .stats-summary-table th, .stats-detail-table th { font-size: 8px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.2); }
-    .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 5px 4px; border: 1px solid var(--border-color); }
+    .stats-summary-table th, .stats-detail-table th { font-size: 8.5px; color: #9ca3af; text-transform: uppercase; padding: 4px; background: rgba(0,0,0,0.25); }
+    .stats-summary-table td, .stats-detail-table td { font-size: 11px; font-weight: 800; padding: 6px 4px; border: 1px solid var(--border-color); }
 
+    /* MARKER INSTRUMEN */
     .custom-marker { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
     .marker-triangle { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid var(--seismo-color); filter: drop-shadow(0 0 3px var(--seismo-color)); }
-    .marker-computer { background: var(--wrsng-color); color: white; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 6px var(--wrsng-color); }
+    .marker-computer { background: var(--wrsng-color); color: white; width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 6px var(--wrsng-color); }
     .marker-circle { background: var(--accel-color); width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 6px var(--accel-color); }
     .marker-star { color: var(--inten-color); font-size: 22px; filter: drop-shadow(0 0 3px var(--inten-color)); }
     .marker-anchor { background: var(--tsunami-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--tsunami-color); }
     .marker-bolt { background: var(--lightning-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--lightning-color); }
-    .marker-box { background: var(--magneto-color); color: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--magneto-color); }
-    .doc-img-item { width: 100%; height: auto; max-height: 180px; object-fit: cover; border-radius: 6px; cursor: pointer; }
+    .marker-box { background: var(--magneto-color); color: white; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 11px; box-shadow: 0 0 6px var(--magneto-color); }
 
-    @media (max-width: 767px) {
-      .offcanvas-responsive { position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; width: 100% !important; height: 80vh !important; border-top: 1px solid var(--border-color) !important; border-radius: 16px 16px 0 0; }
+    /* GALERI FOTO GRID RAPI (2 KOLOM) */
+    .doc-gallery-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px;
     }
-    @media (min-width: 768px) { .offcanvas-responsive { width: 400px !important; } }
+    .doc-img-item {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px;
+      border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;
+    }
+    .doc-img-item:hover { transform: scale(1.03); border-color: var(--accent-neon); }
+
+    /* OFFCANVAS SIDEBAR STYLING */
+    @media (max-width: 767px) {
+      .offcanvas-responsive {
+        position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+        width: 100% !important; height: 82vh !important; border-top: 1px solid var(--border-color) !important;
+        border-radius: 20px 20px 0 0;
+      }
+    }
+    @media (min-width: 768px) {
+      .offcanvas-responsive { width: 420px !important; }
+    }
   </style>
 </head>
 <body oncontextmenu="return false;">
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen">
-    <div class="card bg-panel border-secondary text-white p-4 shadow-lg" style="width: 100%; max-width: 400px; border-radius: 14px;">
-      <div class="text-center mb-3">
+    <div class="card bg-panel border-secondary text-white p-4 shadow-lg" style="width: 100%; max-width: 380px; border-radius: 16px;">
+      <div class="text-center mb-4">
         <i class="fa-solid fa-microchip text-info fs-1"></i>
         <h5 class="fw-bold text-info mt-2 mb-1">FIELD OPS COMMAND CENTER</h5>
         <small class="mono text-muted">STASIUN GEOFISIKA KELAS I DELI SERDANG</small>
       </div>
       <form onsubmit="handleLogin(event)">
-        <div class="mb-3"><label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label><input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required></div>
-        <div class="mb-3"><label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label><input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required></div>
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-bold text-uppercase">Email Petugas</label>
+          <input type="email" id="loginEmail" class="form-control bg-dark border-secondary text-white" placeholder="petugas@bmkg.go.id" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label text-muted small fw-bold text-uppercase">Kata Sandi Access</label>
+          <input type="password" id="loginPassword" class="form-control bg-dark border-secondary text-white" placeholder="••••••••" required>
+        </div>
         <button type="submit" class="btn btn-primary w-100 fw-bold text-uppercase py-2"><i class="fa-solid fa-shield-halved me-1"></i> Autentikasi Masuk</button>
       </form>
     </div>
   </div>
 
-  <!-- DASHBOARD UTAMA -->
   <div id="appScreen" style="display:none;">
-    <nav class="navbar navbar-expand bg-panel border-bottom border-secondary px-3">
+    <nav class="navbar navbar-expand bg-panel border-bottom border-secondary px-3 py-2">
       <div class="container-fluid p-0">
         <div class="d-flex align-items-center gap-2">
           <i class="fa-solid fa-tower-observation text-info fs-4"></i>
-          <div><h6 class="fw-bold text-white mb-0">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6><small class="mono text-info d-block" style="font-size: 10px;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small></div>
+          <div>
+            <h6 class="fw-bold text-white mb-0 fs-6">STASIUN GEOFISIKA KELAS I DELI SERDANG</h6>
+            <small class="mono text-info d-block" style="font-size: 10px;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 7px;"></i> SYSTEM MONITORING ALOPTAMA REAL-TIME</small>
+          </div>
         </div>
-        <button class="btn btn-outline-danger btn-sm fw-bold" onclick="handleLogout()"><i class="fa-solid fa-power-off me-1"></i> KELUAR</button>
+        <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="handleLogout()"><i class="fa-solid fa-power-off me-1"></i> KELUAR</button>
       </div>
     </nav>
 
     <div class="container-fluid p-2 p-md-3">
       <div class="row g-2 mb-2">
-        <div class="col-12 col-md"><div class="input-group input-group-sm"><span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span><input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID..." onkeyup="searchStation()"></div></div>
+        <div class="col-12 col-md">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-panel border-secondary text-muted"><i class="fa-solid fa-terminal"></i></span>
+            <input type="text" id="searchInput" class="form-control bg-panel border-secondary text-white" placeholder="Cari Kode Stasiun / ID Instrumen..." onkeyup="searchStation()">
+          </div>
+        </div>
         <div class="col-auto d-flex gap-1 flex-wrap">
           <button class="btn btn-sm btn-outline-info fw-semibold" id="btnLocateUser" onclick="locateUser()"><i class="fa-solid fa-crosshairs me-1"></i> Posisi Saya</button>
           <button class="btn btn-sm btn-warning fw-bold text-dark" onclick="planMultiSiteRoute()"><i class="fa-solid fa-route me-1"></i> Multi-Site (OFF)</button>
@@ -99,7 +165,6 @@
         </div>
       </div>
 
-      <!-- GRID STATISTIK -->
       <div class="row row-cols-2 row-cols-sm-4 row-cols-xl-8 g-2 mb-2">
         <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-all" onclick="resetFilter()"><small class="text-muted fw-bold">TOTAL</small><div class="fs-5 fw-bold mono text-white" id="count-total">0</div></div></div>
         <div class="col"><div class="card bg-panel border-secondary p-2 stat-card card-seismo" onclick="toggleLayerFilter('seismo')"><small class="text-muted fw-bold">SEISMO</small><div class="fs-5 fw-bold mono text-white" id="count-seismo">0</div></div></div>
@@ -113,44 +178,63 @@
 
       <div class="map-container border border-secondary">
         <div class="stats-floating-box">
-          <div class="stats-box-header"><span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span><i id="statsToggleIcon" class="fa-solid fa-chevron-up text-muted" style="cursor:pointer;" onclick="toggleStatsBox()"></i></div>
+          <div class="stats-box-header">
+            <span class="small fw-bold text-white"><i class="fa-solid fa-chart-pie text-info me-1"></i> STATISTIK ALOPTAMA</span>
+            <i id="statsToggleIcon" class="fa-solid fa-chevron-up text-muted" style="cursor:pointer;" onclick="toggleStatsBox()"></i>
+          </div>
           <div id="statsBoxBody" class="stats-box-body">
-            <table class="stats-summary-table mono"><thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead><tbody><tr><td id="tbl-total">0</td><td id="tbl-up" class="text-success">0</td><td id="tbl-down" class="text-danger">0</td><td id="tbl-percent" class="text-info">0%</td></tr></tbody></table>
-            <div class="alert alert-danger p-2 mb-2 mono fw-bold d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="filterByPriority()"><span class="small"><i class="fa-solid fa-triangle-exclamation me-1"></i> PRIORITAS KUNJUNGAN (OFF)</span><span id="tbl-priority-total" class="badge bg-danger">0 SITE</span></div>
-            <table class="stats-detail-table mono"><thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead><tbody id="tbl-detail-rows"></tbody></table>
+            <table class="stats-summary-table mono">
+              <thead><tr><th>TOTAL SITE</th><th>🟢 UP</th><th>🔴 DOWN</th><th>% ACTIVE</th></tr></thead>
+              <tbody><tr><td id="tbl-total">0</td><td id="tbl-up" class="text-success">0</td><td id="tbl-down" class="text-danger">0</td><td id="tbl-percent" class="text-info">0%</td></tr></tbody>
+            </table>
+            <div class="alert alert-danger p-2 mb-2 mono fw-bold d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="filterByPriority()">
+              <span class="small"><i class="fa-solid fa-triangle-exclamation me-1"></i> PRIORITAS KUNJUNGAN (OFF)</span>
+              <span id="tbl-priority-total" class="badge bg-danger">0 SITE</span>
+            </div>
+            <table class="stats-detail-table mono">
+              <thead><tr><th>TIPE ALAT</th><th>TOT</th><th>UP</th><th>DOWN</th><th>PRIO</th><th>%</th></tr></thead>
+              <tbody id="tbl-detail-rows"></tbody>
+            </table>
           </div>
         </div>
+
         <div id="map"></div>
       </div>
     </div>
   </div>
 
-  <!-- OFFCANVAS DETAIL STASIUN -->
   <div class="offcanvas offcanvas-end offcanvas-responsive bg-panel text-white border-start border-secondary" tabindex="-1" id="detailOffcanvas">
     <div class="offcanvas-header border-bottom border-secondary py-2 px-3">
-      <div class="d-flex align-items-center gap-2"><span id="panelCategory" class="badge bg-info text-dark fw-bold mono">KATEGORI</span><span id="panelStatusBadge" class="badge bg-success fw-bold">ON</span></div>
+      <div class="d-flex align-items-center gap-2">
+        <span id="panelCategory" class="badge bg-info text-dark fw-bold mono">KATEGORI</span>
+        <span id="panelStatusBadge" class="badge bg-success fw-bold">ON</span>
+      </div>
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-3">
       <h5 id="panelTitle" class="fw-bold mb-1">Nama Stasiun</h5>
-      <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1"></i> <span id="panelCoords">0, 0</span></p>
+      <p class="mono text-muted small mb-3"><i class="fa-solid fa-location-crosshairs me-1 text-info"></i> <span id="panelCoords">0, 0</span></p>
 
       <div class="card bg-dark border-secondary p-3 mb-3">
-        <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-1"></i> LOG KUNJUNGAN TEKNISI</h6>
+        <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-wrench me-2"></i>LOG KUNJUNGAN TEKNISI</h6>
         <div class="mb-2"><small class="text-info fw-bold d-block">KUNJUNGAN TERAKHIR:</small><span id="valLastVisit" class="mono text-white small">-</span></div>
         <div class="mb-2"><small class="text-info fw-bold d-block">KEGIATAN DILAKUKAN:</small><span id="valActivity" class="text-white small">-</span></div>
         <div class="mb-2"><small class="text-info fw-bold d-block">CATATAN PEMELIHARAAN:</small><span id="valNotes" class="text-white small">-</span></div>
         <div class="mb-2"><small class="text-info fw-bold d-block">REKOMENDASI LANJUTAN:</small><span id="valRecs" class="text-white small">-</span></div>
-        <div><small class="text-info fw-bold d-block mb-1">DOKUMENTASI LAPANGAN:</small><div id="docGallery" class="d-flex flex-column gap-2"></div><small id="noImgText" class="text-muted italic">Tidak ada berkas foto</small></div>
+        <div>
+          <small class="text-info fw-bold d-block mb-1">DOKUMENTASI LAPANGAN:</small>
+          <div id="docGallery" class="doc-gallery-grid"></div>
+          <small id="noImgText" class="text-muted italic">Tidak ada berkas foto</small>
+        </div>
       </div>
 
-      <div class="card bg-dark border-info p-3 mb-3">
-        <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-compass me-1"></i> RADIUS SITE TERDEKAT:</h6>
+      <div class="card bg-dark border-secondary p-3 mb-3">
+        <h6 class="fw-bold text-info border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-compass me-2"></i>RADIUS SITE TERDEKAT</h6>
         <div id="nearbySitesContainer" class="list-group list-group-flush small"></div>
       </div>
 
       <div id="offReportSection" class="alert alert-danger bg-danger-subtle border-danger p-3 mb-3" style="display: none;">
-        <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> LAPORAN KONDISI MATI (BYPASS)</h6>
+        <h6 class="fw-bold text-danger border-bottom border-danger pb-2 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>LAPORAN KONDISI MATI (BYPASS)</h6>
         <div class="mb-2"><small class="text-danger fw-bold d-block">TANGGAL LAPOR MATI:</small><span id="valOffDate" class="mono text-white small">-</span></div>
         <div class="mb-2"><small class="text-danger fw-bold d-block">DUGAAN PENYEBAB:</small><span id="valOffReason" class="text-white small">-</span></div>
         <div><small class="text-danger fw-bold d-block">RINCIAN TROUBLESHOOT:</small><span id="valOffNotes" class="text-white small">-</span></div>
@@ -158,11 +242,16 @@
 
       <div class="accordion mb-3" id="formAccordion">
         <div class="accordion-item bg-dark border-danger">
-          <h2 class="accordion-header"><button class="accordion-button collapsed bg-danger-subtle text-danger fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBypass"><i class="fa-solid fa-triangle-exclamation me-2"></i> Bypass Laporkan Alat Mati (Urgent)</button></h2>
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed bg-danger-subtle text-danger fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBypass">
+              <i class="fa-solid fa-triangle-exclamation me-2"></i> Bypass Laporkan Alat Mati (Urgent)
+            </button>
+          </h2>
           <div id="collapseBypass" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
             <div class="accordion-body bg-dark text-white p-3">
               <form onsubmit="saveBypassOffReport(event)">
-                <div class="mb-2"><label class="form-label text-muted small fw-bold">Kategori Troubleshoot</label>
+                <div class="mb-2">
+                  <label class="form-label text-muted small fw-bold">Kategori Troubleshoot</label>
                   <select id="bypassReason" class="form-select form-select-sm bg-panel border-secondary text-white" required>
                     <option value="Kendala Power / Solar Cell / Baterai Drop">Kendala Power / Solar Cell / Baterai Drop</option>
                     <option value="Gangguan Jaringan / Router Modem Down">Gangguan Jaringan / Router Modem Down</option>
@@ -172,7 +261,10 @@
                     <option value="Penyebab Lainnya">Lainnya</option>
                   </select>
                 </div>
-                <div class="mb-3"><label class="form-label text-muted small fw-bold">Rincian Troubleshoot</label><textarea id="bypassNotes" class="form-control form-control-sm bg-panel border-secondary text-white" rows="2" required></textarea></div>
+                <div class="mb-3">
+                  <label class="form-label text-muted small fw-bold">Rincian Troubleshoot</label>
+                  <textarea id="bypassNotes" class="form-control form-control-sm bg-panel border-secondary text-white" rows="2" required></textarea>
+                </div>
                 <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold text-uppercase"><i class="fa-solid fa-bolt me-1"></i> Bypass Status Into OFF</button>
               </form>
             </div>
@@ -180,7 +272,11 @@
         </div>
 
         <div class="accordion-item bg-dark border-secondary mt-2">
-          <h2 class="accordion-header"><button class="accordion-button collapsed bg-panel text-info fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLog"><i class="fa-solid fa-pen-to-square me-2"></i> Input Maintenance Log Normal</button></h2>
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed bg-panel text-info fw-bold py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLog">
+              <i class="fa-solid fa-pen-to-square me-2"></i> Input Maintenance Log Normal
+            </button>
+          </h2>
           <div id="collapseLog" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
             <div class="accordion-body bg-dark text-white p-3">
               <form onsubmit="saveReportToDatabase(event)">
@@ -196,11 +292,11 @@
           </div>
         </div>
       </div>
+
       <a id="panelNav" href="#" target="_blank" class="btn btn-outline-info w-100 fw-bold"><i class="fa-solid fa-route me-1"></i> Navigasi Single Site</a>
     </div>
   </div>
 
-  <!-- MODAL RANCANGAN EKSPEDISI -->
   <div class="modal fade" id="expeditionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary text-white">
@@ -233,7 +329,6 @@
     </div>
   </div>
 
-  <!-- MODAL LIGHTBOX FOTO -->
   <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-dark border-secondary">
@@ -514,7 +609,7 @@
         photos.forEach(url => {
           const img = document.createElement('img'); img.src = url; img.className = 'doc-img-item border border-secondary'; img.onclick = () => openLightboxImage(url); galleryEl.appendChild(img);
         });
-        galleryEl.style.display = 'flex'; noImgEl.style.display = 'none';
+        galleryEl.style.display = 'grid'; noImgEl.style.display = 'none';
       } else { galleryEl.style.display = 'none'; noImgEl.style.display = 'inline'; }
 
       const offBox = document.getElementById('offReportSection');
